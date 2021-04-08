@@ -91,23 +91,49 @@ function collisionBelow() {
         // reached bottom
         if (idOfNextRow >= fieldHeight) return true;
         // look for non-empty field-cell under non-empty piece-cell
-        return row
-            .some((cell, x) => cell !== 0 && field[idOfNextRow][x + piecePosition.x] !== 0);
+        return row.some((cell, x) => cell !== 0 && field[idOfNextRow][x + piecePosition.x] !== 0);
     });
 }
 
-function collisionSideways() {
-    // TODO implement this
-    return true;
-}
-
 function translateX(delta = stepSize) {
-    const newFrontalEdgePosition = delta < 0
-        ? piecePosition.x + delta
-        : piecePosition.x + delta + currentPiece[0].length - 1;
-    if (isNumberBetween(newFrontalEdgePosition, 0, fieldWidth - 1) && !collisionSideways()) {
+    if (!collisionSideways(delta > 0)) {
         piecePosition.x += delta;
     }
+}
+
+function collisionSideways(movingRight) {
+    // the piece has not completely entered the field
+    if (piecePosition.y < 0) return true;
+    if (movingRight) {
+        return collisionRight();
+    }
+    return collisionLeft();
+}
+
+function collisionRight() {
+    return currentPiece.some((row, y) => {
+        const idOfCurrentRow = y + piecePosition.y;
+        return row.some((cell, x) => {
+            const idOfNextCell = x + piecePosition.x + stepSize;
+            // reached right side
+            if (idOfNextCell >= fieldWidth) return true;
+            // look for non-empty field-cell right of non-empty piece-cell
+            return cell !== 0 && field[idOfCurrentRow][idOfNextCell] !== 0;
+        });
+    });
+}
+
+function collisionLeft() {
+    return currentPiece.some((row, y) => {
+        const idOfCurrentRow = y + piecePosition.y;
+        return row.some((cell, x) => {
+            const idOfPrevCell = x + piecePosition.x - stepSize;
+            // reached left side
+            if (idOfPrevCell < 0) return true;
+            // look for non-empty field-cell left of non-empty piece-cell
+            return cell !== 0 && field[idOfCurrentRow][idOfPrevCell] !== 0;
+        });
+    });
 }
 
 function debugOutput() {
@@ -116,7 +142,7 @@ function debugOutput() {
     y: ${piecePosition.y}, 
     h: ${currentPiece.length}, 
     w: ${currentPiece[0].length}
-    Ids of piece: ${currentPiece.map((_, y) => y + piecePosition.y + 1)}
+    Ids of piece: ${currentPiece.map((_, y) => y + piecePosition.y)}
     `;
 }
 
@@ -127,20 +153,16 @@ function rotatePiece() {
     }
 }
 
-function isNumberBetween(num, min, max) {
-    return num >= min && num <= max;
-}
-
 /** Iterate over a 2d array and execute a callback for each non-zero cell
  * @param { number[][] } arr
  * @param { Function } cb
  */
 function iterate(arr, cb) {
-    arr
-        .forEach((row, y) => row
-            .forEach((cell, x) => {
-                if (cell > 0) {
-                    cb(y, x, cell);
-                }
-            }));
+    arr.forEach((row, y) => row
+        .forEach((cell, x) => {
+            if (cell > 0) {
+                cb(y, x, cell);
+            }
+        })
+    );
 };
