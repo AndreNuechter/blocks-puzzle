@@ -1,0 +1,16 @@
+body {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+#container {
+    position: relative;
+}
+
+#container canvas {
+    position: absolute;
+}
+
+#helper-canvas {
+    border: 1px solid red;
+}
