@@ -1,11 +1,12 @@
 import randomPiece, { colors } from './pieces.js';
-
-const dropOffsetX = 4;
-const dropOffsetY = -1;
-const cellSize = 10;
-const fieldHeight = 20;
-const fieldWidth = 10;
-const stepSize = 1;
+import {
+    dropOffsetX,
+    dropOffsetY,
+    cellSize,
+    fieldHeight,
+    fieldWidth,
+    stepSize
+} from './constants.js';
 
 const debug = document.getElementById('debug');
 
