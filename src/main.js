@@ -7,6 +7,10 @@ import {
     fieldWidth,
     stepSize
 } from './constants.js';
+import {
+    lastItem,
+    iterate
+} from './helper-funcs.js';
 
 const debug = document.getElementById('debug');
 
@@ -137,33 +141,9 @@ function collisionLeft() {
     });
 }
 
-function debugOutput() {
-    debug.innerText = `position 
-    x: ${piecePosition.x}, 
-    y: ${piecePosition.y}, 
-    h: ${currentPiece.length}, 
-    w: ${currentPiece[0].length}
-    Ids of piece: ${currentPiece.map((_, y) => y + piecePosition.y)}
-    `;
-}
-
 function rotatePiece() {
     // TODO implement this
     if (piecePosition.y) {
         piecePosition.y -= 1;
     }
 }
-
-/** Iterate over a 2d array and execute a callback for each non-zero cell
- * @param { number[][] } arr
- * @param { Function } cb
- */
-function iterate(arr, cb) {
-    arr.forEach((row, y) => row
-        .forEach((cell, x) => {
-            if (cell > 0) {
-                cb(y, x, cell);
-            }
-        })
-    );
-};

@@ -1,3 +1,5 @@
+import { randomId } from './helper-funcs.js';
+
 const pieces = Object.values({
     line: [[0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0], [0, 0, 1, 0]],
     s: [[0, 2, 2], [2, 2, 0], [0, 0, 0]],
@@ -19,10 +21,6 @@ export const colors = [
     'orange',
     'beige'
 ];
-
-function randomId(arrLength) {
-    return Math.floor(Math.random() * arrLength);
-}
 
 export default function randomPiece() {
     return pieces[randomId(pieces.length)];
