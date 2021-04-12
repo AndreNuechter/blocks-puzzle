@@ -7,16 +7,16 @@ import {
     fieldWidth,
     stepSize
 } from './constants.js';
-import {
-    lastItem,
-    iterate
-} from './helper-funcs.js';
+import { iterate, rotate2dArray } from './helper-funcs.js';
+import collisionDetection from './collision-detection.js';
 
 const debug = document.getElementById('debug');
 
 const mainCanvas = document.getElementById('main-canvas').getContext('2d', { alpha: false });
 const sideCanvas = document.getElementById('helper-canvas').getContext('2d');
 const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth).fill(0));
+const { collisionHorizontally, collisionVertically } = collisionDetection(field);
+
 const piecePosition = {};
 let currentPiece;
 
@@ -65,7 +65,7 @@ function positionPiece() {
 
 // TODO do this in an interval
 function applyGravity() {
-    if (!collisionBelow()) {
+    if (!collisionVertically(currentPiece, piecePosition, stepSize)) {
         piecePosition.y += stepSize;
     } else {
         // integrate piece into field and draw newly added piece on the main canvas
@@ -90,60 +90,21 @@ function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
     };
 }
 
-function collisionBelow() {
-    return currentPiece.some((row, y) => {
-        const idOfNextRow = y + piecePosition.y + stepSize;
-        // reached bottom
-        if (idOfNextRow >= fieldHeight) return true;
-        // look for non-empty field-cell under non-empty piece-cell
-        return row.some((cell, x) => cell !== 0 && field[idOfNextRow][x + piecePosition.x] !== 0);
-    });
-}
-
 function translateX(delta = stepSize) {
-    if (!collisionSideways(delta > 0)) {
+    if (!collisionHorizontally(currentPiece, piecePosition, delta)) {
         piecePosition.x += delta;
     }
 }
 
-function collisionSideways(movingRight) {
-    // the piece has not completely entered the field
-    if (piecePosition.y < 0) return true;
-    if (movingRight) {
-        return collisionRight();
-    }
-    return collisionLeft();
-}
-
-function collisionRight() {
-    return currentPiece.some((row, y) => {
-        const idOfCurrentRow = y + piecePosition.y;
-        return row.some((cell, x) => {
-            const idOfNextCell = x + piecePosition.x + stepSize;
-            // reached right side
-            if (idOfNextCell >= fieldWidth) return true;
-            // look for non-empty field-cell right of non-empty piece-cell
-            return cell !== 0 && field[idOfCurrentRow][idOfNextCell] !== 0;
-        });
-    });
-}
-
-function collisionLeft() {
-    return currentPiece.some((row, y) => {
-        const idOfCurrentRow = y + piecePosition.y;
-        return row.some((cell, x) => {
-            const idOfPrevCell = x + piecePosition.x - stepSize;
-            // reached left side
-            if (idOfPrevCell < 0) return true;
-            // look for non-empty field-cell left of non-empty piece-cell
-            return cell !== 0 && field[idOfCurrentRow][idOfPrevCell] !== 0;
-        });
-    });
-}
-
 function rotatePiece() {
-    // TODO implement this
-    if (piecePosition.y) {
-        piecePosition.y -= 1;
+    // TODO wallkicks
+    const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
+    if (!(
+        collisionHorizontally(rotatedPiece, piecePosition, 0)
+        || collisionVertically(rotatedPiece, piecePosition, 0)
+    )) {
+        currentPiece = rotatedPiece;
+        sideCanvas.clearRect(0, 0, sideCanvas.canvas.width, sideCanvas.canvas.height);
+        iterate(currentPiece, drawPiece(sideCanvas));
     }
 }
