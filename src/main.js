@@ -69,13 +69,32 @@ function applyGravity() {
         piecePosition.y += stepSize;
     } else {
         // integrate piece into field and draw newly added piece on the main canvas
-        const cb = drawPiece(mainCanvas, piecePosition);
-        mainCanvas.fillStyle = colors[currentPiece[0].find((v) => v !== 0)];
+        const cb1 = drawPiece(mainCanvas, piecePosition);
         iterate(currentPiece, (y, x, cell) => {
             field[piecePosition.y + y][piecePosition.x + x] = cell;
-            cb(y, x);
+            cb1(y, x);
         });
-        // spawn a new piece at the top
+        // clear filled rows
+        let cleared = 0;
+        // TODO increase speed/lvl
+        // TODO animate line-clearing
+        field.forEach((row, y) => {
+            if (row.some(cell => cell === 0)) return;
+            row.fill(0);
+            cleared += 1;
+            field.unshift(...field.splice(y, 1));
+        });
+        if (cleared > 0) {
+            // TODO give points (combos, t-spins...)
+            const cb2 = drawPiece(mainCanvas);
+            mainCanvas.fillStyle = 'lightgrey';
+            mainCanvas.fillRect(0, 0, fieldWidth * cellSize, fieldHeight * cellSize);
+            iterate(field, (y, x, cell) => {
+                mainCanvas.fillStyle = colors[cell];
+                cb2(y, x);
+            });
+        }
+
         spawnPiece();
     }
 }
