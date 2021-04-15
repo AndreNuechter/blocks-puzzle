@@ -5,28 +5,123 @@ import {
     cellSize,
     fieldHeight,
     fieldWidth,
+    lineClearMultiplier,
     stepSize
 } from './constants.js';
 import { iterate, rotate2dArray } from './helper-funcs.js';
-import collisionDetection from './collision-detection.js';
+import { collisionHorizontally, collisionVertically } from './collision-detection.js';
 
-const debug = document.getElementById('debug');
+// TODO try deno vsc extension for linting/formatting and bundling
+// TODO PWA...icons, manifest, service-worker, mobile input handling...
+// TODO preview next piece
 
+const pointsDisplay = document.getElementById('points-display');
+const levelDisplay = document.getElementById('level-display');
+const overlay = document.getElementById('overlay');
 const mainCanvas = document.getElementById('main-canvas').getContext('2d', { alpha: false });
 const sideCanvas = document.getElementById('helper-canvas').getContext('2d');
-const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth).fill(0));
-const { collisionHorizontally, collisionVertically } = collisionDetection(field);
-
+const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
+// TODO getter and setter to do collisionDetection and enforce bounds + module?!
 const piecePosition = {};
 let currentPiece;
+// TODO getter/setter to tie assignment to DOM-updates?! (same for lvl/clearedLines)
+let points = 0;
+let clearedLines = 0;
+let initialDropDelay = 1000;
+let animationRequestId;
+let lastCall;
 
-mainCanvas.fillStyle = 'lightgrey';
-// +1 to width to account for the the 0.5 offset on pieces
-mainCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize);
-spawnPiece();
-debugOutput();
+window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('keydown', startGame, { once: true });
+}, { once: true });
 
-window.onkeydown = ({ key }) => {
+function startGame() {
+    field.forEach(row => row.fill(0));
+    points = 0;
+    clearedLines = 0;
+    overlay.style.opacity = 0;
+    pointsDisplay.textContent = 0;
+    levelDisplay.textContent = 0;
+    clearCanvas();
+    spawnPiece();
+    window.addEventListener('keydown', handleKeydown);
+    animationRequestId = requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+    cancelAnimationFrame(animationRequestId);
+    window.removeEventListener('keydown', handleKeydown);
+    overlay.firstElementChild.style.display = 'block';
+    overlay.style.opacity = 1;
+    // add the ability to start new game after a delay,
+    // because the player might still hold down a key
+    setTimeout(() => window.addEventListener('keydown', startGame, { once: true }), 1000);
+}
+
+function gameLoop(timestamp) {
+    if (lastCall === undefined) {
+        lastCall = timestamp;
+    }
+
+    animationRequestId = requestAnimationFrame(gameLoop);
+
+    // pieces should fall at 1 row/frame after about 300 line-clears
+    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * clearedLines)) {
+        lastCall = timestamp;
+        applyGravity();
+    }
+}
+
+function applyGravity() {
+    if (!collisionVertically(field, currentPiece, piecePosition, stepSize)) {
+        piecePosition.y += stepSize;
+        positionPiece();
+    } else {
+        if (piecePosition.y < 0) {
+            endGame();
+            return;
+        }
+        lockPiece();
+        clearLines();
+        spawnPiece();
+    }
+}
+
+function lockPiece() {
+    const cb1 = drawPiece(mainCanvas, piecePosition);
+    iterate(currentPiece, (y, x, cell) => {
+        field[piecePosition.y + y][piecePosition.x + x] = cell;
+        cb1(y, x);
+    });
+}
+
+function clearLines() {
+    // TODO animate line-clearing
+    let cleared = 0;
+    field.forEach((row, y) => {
+        if (row.some(cell => cell === 0)) return;
+        row.fill(0);
+        cleared += 1;
+        field.unshift(...field.splice(y, 1));
+    });
+    if (cleared > 0) {
+        const currentLvl = Math.floor(clearedLines * 0.1);
+        const cb2 = drawPiece(mainCanvas);
+        clearCanvas();
+        iterate(field, (y, x, cell) => {
+            mainCanvas.fillStyle = colors[cell];
+            cb2(y, x);
+        });
+        // TODO bonus points for eg t-spins and combos...
+        points += lineClearMultiplier[cleared] * (currentLvl + 1);
+        pointsDisplay.textContent = points;
+        levelDisplay.textContent = currentLvl;
+        clearedLines += cleared;
+    }
+}
+
+function handleKeydown({ key }) {
+    // TODO pause on space
     let mutated = false;
 
     if (key === 'ArrowDown') {
@@ -39,21 +134,27 @@ window.onkeydown = ({ key }) => {
         mutated = true;
         translateX();
     } else if (key === 'ArrowUp') {
-        mutated = true;
         rotatePiece();
     }
 
     if (mutated) {
         positionPiece();
-        debugOutput();
     }
-};
+}
+
+function clearCanvas() {
+    mainCanvas.fillStyle = 'lightgrey';
+    // +1 to width to account for the the 0.5 offset on pieces
+    mainCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize);
+}
 
 function spawnPiece() {
     Object.assign(piecePosition, { x: dropOffsetX, y: dropOffsetY });
     currentPiece = randomPiece();
+    const fillColor = colors[currentPiece[0].find((v) => v !== 0)];
+    mainCanvas.fillStyle = fillColor;
+    sideCanvas.fillStyle = fillColor;
     sideCanvas.clearRect(0, 0, sideCanvas.canvas.width, sideCanvas.canvas.height);
-    sideCanvas.fillStyle = colors[currentPiece[0].find((v) => v !== 0)];
     iterate(currentPiece, drawPiece(sideCanvas));
     positionPiece();
 }
@@ -62,42 +163,6 @@ function positionPiece() {
     sideCanvas.canvas.style.left = `${piecePosition.x * cellSize}px`;
     sideCanvas.canvas.style.top = `${piecePosition.y * cellSize}px`;
 };
-
-// TODO do this in an interval
-function applyGravity() {
-    if (!collisionVertically(currentPiece, piecePosition, stepSize)) {
-        piecePosition.y += stepSize;
-    } else {
-        // integrate piece into field and draw newly added piece on the main canvas
-        const cb1 = drawPiece(mainCanvas, piecePosition);
-        iterate(currentPiece, (y, x, cell) => {
-            field[piecePosition.y + y][piecePosition.x + x] = cell;
-            cb1(y, x);
-        });
-        // clear filled rows
-        let cleared = 0;
-        // TODO increase speed/lvl
-        // TODO animate line-clearing
-        field.forEach((row, y) => {
-            if (row.some(cell => cell === 0)) return;
-            row.fill(0);
-            cleared += 1;
-            field.unshift(...field.splice(y, 1));
-        });
-        if (cleared > 0) {
-            // TODO give points (combos, t-spins...)
-            const cb2 = drawPiece(mainCanvas);
-            mainCanvas.fillStyle = 'lightgrey';
-            mainCanvas.fillRect(0, 0, fieldWidth * cellSize, fieldHeight * cellSize);
-            iterate(field, (y, x, cell) => {
-                mainCanvas.fillStyle = colors[cell];
-                cb2(y, x);
-            });
-        }
-
-        spawnPiece();
-    }
-}
 
 function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
     return (i, j) => {
@@ -110,7 +175,7 @@ function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
 }
 
 function translateX(delta = stepSize) {
-    if (!collisionHorizontally(currentPiece, piecePosition, delta)) {
+    if (!collisionHorizontally(field, currentPiece, piecePosition, delta)) {
         piecePosition.x += delta;
     }
 }
@@ -119,8 +184,8 @@ function rotatePiece() {
     // TODO wallkicks
     const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
     if (!(
-        collisionHorizontally(rotatedPiece, piecePosition, 0)
-        || collisionVertically(rotatedPiece, piecePosition, 0)
+        collisionHorizontally(field, rotatedPiece, piecePosition, 0)
+        || collisionVertically(field, rotatedPiece, piecePosition, 0)
     )) {
         currentPiece = rotatedPiece;
         sideCanvas.clearRect(0, 0, sideCanvas.canvas.width, sideCanvas.canvas.height);
