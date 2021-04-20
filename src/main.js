@@ -8,12 +8,12 @@ import {
     initialDropDelay,
     lineClearMultipliers,
     stepSize
-} from './constants.js';
-import { iterate, rotate2dArray } from './helper-funcs.js';
-import { collisionHorizontally, collisionVertically } from './collision-detection.js';
-import { fieldCanvas, currentPieceCanvas } from './dom-selections.js';
-import randomPiece, { colors } from './pieces.js';
-import roundData from './round-data.js';
+} from './js/constants.js';
+import { iterate, rotate2dArray } from './js/helper-funcs.js';
+import { collisionHorizontally, collisionVertically } from './js/collision-detection.js';
+import { fieldCanvas, currentPieceCanvas } from './js/dom-selections.js';
+import randomPiece, { colors } from './js/pieces.js';
+import roundData from './js/round-data.js';
 
 // +1 to account for outlines
 Object.assign(fieldCanvas.canvas, {

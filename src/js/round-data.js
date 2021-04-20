@@ -1,5 +1,11 @@
 import { cellSize } from './constants.js';
-import { overlay, pointsDisplay, clearedLinesCountDisplay, gameSummary, currentPieceCanvas } from './dom-selections.js';
+import {
+    overlay,
+    pointsDisplay,
+    clearedLinesCountDisplay,
+    gameSummary,
+    currentPieceCanvas
+} from './dom-selections.js';
 
 let points = 0;
 let clearedLinesCount = 0;
