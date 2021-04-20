@@ -12,16 +12,20 @@
 
 <body>
     <div id="hud">
-        Level: <span id="level-display">0</span>
-        Points: <span id="points-display">0</span>
+        <div id="statistics">
+            Cleared Lines: <span id="cleared-lines-count-display">0</span>
+            Points: <span id="points-display">0</span>
+        </div>
+        <canvas id="piece-preview"></canvas>
     </div>
-    <div id="container">
-        <canvas id="main-canvas" width="100" height="200"></canvas>
-        <canvas id="helper-canvas" width="41" height="41"></canvas>
+    <div id="canvas-container">
+        <canvas id="field-canvas"></canvas>
+        <canvas id="current-piece-canvas"></canvas>
     </div>
-    <div id="overlay">
-        <p id="game-over-msg">Game over</p>
+    <div id="overlay" class="fresh">
+        <p id="game-over-msg">Game over (<span id="game-summary"></span>)</p>
         <p id="new-game-msg">Press any key to start a new Game.</p>
+        <p id="paused-msg">Paused. Press any key to continue.</p>
     </div>
 </body>
 

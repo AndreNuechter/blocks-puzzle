@@ -1,62 +1,42 @@
-import randomPiece, { colors } from './pieces.js';
 import {
+    currentPieceCanvasSize,
     dropOffsetX,
     dropOffsetY,
     cellSize,
     fieldHeight,
     fieldWidth,
-    lineClearMultiplier,
+    initialDropDelay,
+    lineClearMultipliers,
     stepSize
 } from './constants.js';
 import { iterate, rotate2dArray } from './helper-funcs.js';
 import { collisionHorizontally, collisionVertically } from './collision-detection.js';
+import { fieldCanvas, currentPieceCanvas } from './dom-selections.js';
+import randomPiece, { colors } from './pieces.js';
+import roundData from './round-data.js';
+
+// +1 to account for outlines
+Object.assign(fieldCanvas.canvas, {
+    width: fieldWidth * cellSize + 1,
+    height: fieldHeight * cellSize + 1
+});
+Object.assign(currentPieceCanvas.canvas, {
+    width: currentPieceCanvasSize * cellSize + 1,
+    height: currentPieceCanvasSize * cellSize + 1
+});
 
 // TODO try deno vsc extension for linting/formatting and bundling
 // TODO PWA...icons, manifest, service-worker, mobile input handling...
-// TODO preview next piece
+// TODO preview next piece(s)
+// TODO show input options on splashscreen
 
-const pointsDisplay = document.getElementById('points-display');
-const levelDisplay = document.getElementById('level-display');
-const overlay = document.getElementById('overlay');
-const mainCanvas = document.getElementById('main-canvas').getContext('2d', { alpha: false });
-const sideCanvas = document.getElementById('helper-canvas').getContext('2d');
 const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
-// TODO getter and setter to do collisionDetection and enforce bounds + module?!
-const piecePosition = {};
 let currentPiece;
-// TODO getter/setter to tie assignment to DOM-updates?! (same for lvl/clearedLines)
-let points = 0;
-let clearedLines = 0;
-let initialDropDelay = 1000;
+let isGamePaused;
 let animationRequestId;
 let lastCall;
 
-window.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('keydown', startGame, { once: true });
-}, { once: true });
-
-function startGame() {
-    field.forEach(row => row.fill(0));
-    points = 0;
-    clearedLines = 0;
-    overlay.style.opacity = 0;
-    pointsDisplay.textContent = 0;
-    levelDisplay.textContent = 0;
-    clearCanvas();
-    spawnPiece();
-    window.addEventListener('keydown', handleKeydown);
-    animationRequestId = requestAnimationFrame(gameLoop);
-}
-
-function endGame() {
-    cancelAnimationFrame(animationRequestId);
-    window.removeEventListener('keydown', handleKeydown);
-    overlay.firstElementChild.style.display = 'block';
-    overlay.style.opacity = 1;
-    // add the ability to start new game after a delay,
-    // because the player might still hold down a key
-    setTimeout(() => window.addEventListener('keydown', startGame, { once: true }), 1000);
-}
+window.addEventListener('keydown', handleKeydown);
 
 function gameLoop(timestamp) {
     if (lastCall === undefined) {
@@ -65,33 +45,83 @@ function gameLoop(timestamp) {
 
     animationRequestId = requestAnimationFrame(gameLoop);
 
-    // pieces should fall at 1 row/frame after about 300 line-clears
-    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * clearedLines)) {
+    // initially pieces fall at 1 row/sec; after about 300 line-clears at 1 row/frame
+    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
         lastCall = timestamp;
         applyGravity();
     }
 }
 
+function handleKeydown({ key }) {
+    if (isGamePaused === undefined) {
+        // FIXME only allow starting a new game after a delay,
+        // because the player might still hold down a key from the previous game
+        // currentPiece is only undefined if we're just starting...
+        // lastCall could also be usefull here...
+        startGame();
+    } else if (isGamePaused) {
+        // FIXME due to transition on overlay, current piece has moved before it becomes visible
+        startAnimation();
+    } else if (key === 'ArrowDown') {
+        applyGravity();
+    } else if (key === 'ArrowLeft') {
+        translateXPiece(-stepSize);
+    } else if (key === 'ArrowRight') {
+        translateXPiece();
+    } else if (key === 'ArrowUp') {
+        rotatePiece();
+    } else if (key === ' ') {
+        suspendAnimation();
+    }
+}
+
+function startGame() {
+    field.forEach(row => row.fill(0));
+    roundData.points = 0;
+    roundData.clearedLinesCount = 0;
+    clearCanvas();
+    spawnNewPiece();
+    startAnimation();
+}
+
+function startAnimation() {
+    isGamePaused = false;
+    animationRequestId = requestAnimationFrame(gameLoop);
+    document.dispatchEvent(new Event('start-game'));
+}
+
+function suspendAnimation() {
+    isGamePaused = true;
+    cancelAnimationFrame(animationRequestId);
+    document.dispatchEvent(new Event('pause-game'));
+}
+
+function endGame() {
+    suspendAnimation();
+    isGamePaused = undefined;
+    lastCall = undefined;
+    document.dispatchEvent(new Event('game-over'));
+}
+
 function applyGravity() {
-    if (!collisionVertically(field, currentPiece, piecePosition, stepSize)) {
-        piecePosition.y += stepSize;
-        positionPiece();
+    if (!collisionVertically(field, currentPiece, roundData.piecePosition, stepSize)) {
+        roundData.piecePosition.y += stepSize;
     } else {
-        if (piecePosition.y < 0) {
+        if (roundData.piecePosition.y < 0) {
             endGame();
-            return;
+        } else {
+            lockPiece();
+            clearLines();
+            spawnNewPiece();
         }
-        lockPiece();
-        clearLines();
-        spawnPiece();
     }
 }
 
 function lockPiece() {
-    const cb1 = drawPiece(mainCanvas, piecePosition);
+    const cb = drawPiece(fieldCanvas, roundData.piecePosition);
     iterate(currentPiece, (y, x, cell) => {
-        field[piecePosition.y + y][piecePosition.x + x] = cell;
-        cb1(y, x);
+        field[roundData.piecePosition.y + y][roundData.piecePosition.x + x] = cell;
+        cb(y, x);
     });
 }
 
@@ -105,64 +135,33 @@ function clearLines() {
         field.unshift(...field.splice(y, 1));
     });
     if (cleared > 0) {
-        const currentLvl = Math.floor(clearedLines * 0.1);
-        const cb2 = drawPiece(mainCanvas);
+        const cb = drawPiece(fieldCanvas);
         clearCanvas();
         iterate(field, (y, x, cell) => {
-            mainCanvas.fillStyle = colors[cell];
-            cb2(y, x);
+            fieldCanvas.fillStyle = colors[cell];
+            cb(y, x);
         });
-        // TODO bonus points for eg t-spins and combos...
-        points += lineClearMultiplier[cleared] * (currentLvl + 1);
-        pointsDisplay.textContent = points;
-        levelDisplay.textContent = currentLvl;
-        clearedLines += cleared;
-    }
-}
-
-function handleKeydown({ key }) {
-    // TODO pause on space
-    let mutated = false;
-
-    if (key === 'ArrowDown') {
-        mutated = true;
-        applyGravity();
-    } else if (key === 'ArrowLeft') {
-        mutated = true;
-        translateX(-stepSize);
-    } else if (key === 'ArrowRight') {
-        mutated = true;
-        translateX();
-    } else if (key === 'ArrowUp') {
-        rotatePiece();
-    }
-
-    if (mutated) {
-        positionPiece();
+        // TODO give bonus points for eg harddrops, t-spins and combos...
+        roundData.points += lineClearMultipliers[cleared] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1);
+        roundData.clearedLinesCount += cleared;
     }
 }
 
 function clearCanvas() {
-    mainCanvas.fillStyle = 'lightgrey';
-    // +1 to width to account for the the 0.5 offset on pieces
-    mainCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize);
+    fieldCanvas.fillStyle = 'lightgrey';
+    // +1 to account for the the 0.5 offset on pieces
+    fieldCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize + 1);
 }
 
-function spawnPiece() {
-    Object.assign(piecePosition, { x: dropOffsetX, y: dropOffsetY });
+function spawnNewPiece() {
+    Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
     currentPiece = randomPiece();
     const fillColor = colors[currentPiece[0].find((v) => v !== 0)];
-    mainCanvas.fillStyle = fillColor;
-    sideCanvas.fillStyle = fillColor;
-    sideCanvas.clearRect(0, 0, sideCanvas.canvas.width, sideCanvas.canvas.height);
-    iterate(currentPiece, drawPiece(sideCanvas));
-    positionPiece();
+    fieldCanvas.fillStyle = fillColor;
+    currentPieceCanvas.fillStyle = fillColor;
+    currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
+    iterate(currentPiece, drawPiece(currentPieceCanvas));
 }
-
-function positionPiece() {
-    sideCanvas.canvas.style.left = `${piecePosition.x * cellSize}px`;
-    sideCanvas.canvas.style.top = `${piecePosition.y * cellSize}px`;
-};
 
 function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
     return (i, j) => {
@@ -174,9 +173,9 @@ function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
     };
 }
 
-function translateX(delta = stepSize) {
-    if (!collisionHorizontally(field, currentPiece, piecePosition, delta)) {
-        piecePosition.x += delta;
+function translateXPiece(delta = stepSize) {
+    if (!collisionHorizontally(field, currentPiece, roundData.piecePosition, delta)) {
+        roundData.piecePosition.x += delta;
     }
 }
 
@@ -184,11 +183,11 @@ function rotatePiece() {
     // TODO wallkicks
     const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
     if (!(
-        collisionHorizontally(field, rotatedPiece, piecePosition, 0)
-        || collisionVertically(field, rotatedPiece, piecePosition, 0)
+        collisionHorizontally(field, rotatedPiece, roundData.piecePosition, 0)
+        || collisionVertically(field, rotatedPiece, roundData.piecePosition, 0)
     )) {
         currentPiece = rotatedPiece;
-        sideCanvas.clearRect(0, 0, sideCanvas.canvas.width, sideCanvas.canvas.height);
-        iterate(currentPiece, drawPiece(sideCanvas));
+        currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
+        iterate(currentPiece, drawPiece(currentPieceCanvas));
     }
 }
