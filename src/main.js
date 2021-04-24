@@ -25,7 +25,6 @@ Object.assign(currentPieceCanvas.canvas, {
     height: currentPieceCanvasSize * cellSize + 1
 });
 
-// TODO try deno vsc extension for linting/formatting and bundling
 // TODO PWA...icons, manifest, service-worker, mobile input handling...
 // TODO preview next piece(s)
 // TODO show input options on splashscreen
@@ -36,7 +35,7 @@ let isGamePaused;
 let animationRequestId;
 let lastCall;
 
-window.addEventListener('keydown', handleKeydown);
+addKeyDownHandler();
 
 function gameLoop(timestamp) {
     if (lastCall === undefined) {
@@ -52,12 +51,12 @@ function gameLoop(timestamp) {
     }
 }
 
+function addKeyDownHandler() {
+    window.addEventListener('keydown', handleKeydown);
+}
+
 function handleKeydown({ key }) {
     if (isGamePaused === undefined) {
-        // FIXME only allow starting a new game after a delay,
-        // because the player might still hold down a key from the previous game
-        // currentPiece is only undefined if we're just starting...
-        // lastCall could also be usefull here...
         startGame();
     } else if (isGamePaused) {
         // FIXME due to transition on overlay, current piece has moved before it becomes visible
@@ -100,6 +99,14 @@ function endGame() {
     suspendAnimation();
     isGamePaused = undefined;
     lastCall = undefined;
+    // only allow starting a new game after keyup,
+    // because the player might still hold down a key from the previous game
+    window.removeEventListener('keydown', handleKeydown);
+    window.addEventListener(
+        'keyup',
+        addKeyDownHandler,
+        { once: true }
+    );
     document.dispatchEvent(new Event('game-over'));
 }
 
