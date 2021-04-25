@@ -11,16 +11,16 @@
 </head>
 
 <body>
-    <div id="hud">
-        <div id="statistics">
-            Cleared Lines: <span id="cleared-lines-count-display">0</span>
-            Points: <span id="points-display">0</span>
-        </div>
-        <canvas id="piece-preview"></canvas>
-    </div>
     <div id="canvas-container">
         <canvas id="field-canvas"></canvas>
         <canvas id="current-piece-canvas"></canvas>
+    </div>
+    <div id="hud">
+        <canvas id="piece-preview"></canvas>
+        <div id="statistics">
+            <p>Cleared Lines: <span id="cleared-lines-count-display">0</span></p>
+            <p>Points: <span id="points-display">0</span></p>
+        </div>
     </div>
     <div id="overlay" class="fresh">
         <p id="game-over-msg">Game over (<span id="game-summary"></span>)</p>

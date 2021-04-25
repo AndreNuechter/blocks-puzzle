@@ -1,17 +1,20 @@
 body {
-    margin: 0;
     overflow: hidden;
     text-align: center;
 }
 
 #canvas-container {
-    display: flex;
-    justify-content: center;
+    display: inline-flex;
     position: relative;
+    overflow: hidden;
 }
 
 #canvas-container canvas {
     position: absolute;
+}
+
+#hud {
+    display: inline-block;
 }
 
 #overlay {

@@ -7,11 +7,13 @@ import {
     fieldWidth,
     initialDropDelay,
     lineClearMultipliers,
+    previewLength,
+    previewScalingFactor,
     stepSize
 } from './js/constants.js';
 import { iterate, rotate2dArray } from './js/helper-funcs.js';
 import { collisionHorizontally, collisionVertically } from './js/collision-detection.js';
-import { fieldCanvas, currentPieceCanvas } from './js/dom-selections.js';
+import { fieldCanvas, currentPieceCanvas, piecePreview } from './js/dom-selections.js';
 import randomPiece, { colors } from './js/pieces.js';
 import roundData from './js/round-data.js';
 
@@ -20,16 +22,26 @@ Object.assign(fieldCanvas.canvas, {
     width: fieldWidth * cellSize + 1,
     height: fieldHeight * cellSize + 1
 });
+Object.assign(fieldCanvas.canvas.parentElement.style, {
+    width: fieldWidth * cellSize + 1 + 'px',
+    height: fieldHeight * cellSize + 1 + 'px'
+});
 Object.assign(currentPieceCanvas.canvas, {
     width: currentPieceCanvasSize * cellSize + 1,
     height: currentPieceCanvasSize * cellSize + 1
 });
+Object.assign(piecePreview.canvas, {
+    // -1 to save space and since the preview is never rotated
+    width: (currentPieceCanvasSize - 1) * cellSize * previewScalingFactor + 1,
+    height: currentPieceCanvasSize * previewLength * cellSize * previewScalingFactor + 1
+});
 
-// TODO PWA...icons, manifest, service-worker, mobile input handling...
-// TODO preview next piece(s)
+// TODO PWA and gh page...icons, manifest, service-worker, mobile input handling...
+// TODO swap-storage for a piece
 // TODO show input options on splashscreen
 
 const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
+const pieceQueue = new Array(previewLength).fill([]);
 let currentPiece;
 let isGamePaused;
 let animationRequestId;
@@ -78,6 +90,9 @@ function startGame() {
     field.forEach(row => row.fill(0));
     roundData.points = 0;
     roundData.clearedLinesCount = 0;
+    pieceQueue.forEach((_, i) => {
+        pieceQueue[i] = randomPiece();
+    });
     clearCanvas();
     spawnNewPiece();
     startAnimation();
@@ -149,6 +164,7 @@ function clearLines() {
             cb(y, x);
         });
         // TODO give bonus points for eg harddrops, t-spins and combos...
+        // TODO output name of awarded actions
         roundData.points += lineClearMultipliers[cleared] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1);
         roundData.clearedLinesCount += cleared;
     }
@@ -160,23 +176,35 @@ function clearCanvas() {
     fieldCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize + 1);
 }
 
+function getColor(piece) {
+    return colors[piece[0].find((v) => v !== 0)];
+}
+
 function spawnNewPiece() {
     Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
-    currentPiece = randomPiece();
-    const fillColor = colors[currentPiece[0].find((v) => v !== 0)];
+    currentPiece = pieceQueue.pop();
+    const fillColor = getColor(currentPiece);
     fieldCanvas.fillStyle = fillColor;
     currentPieceCanvas.fillStyle = fillColor;
     currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
     iterate(currentPiece, drawPiece(currentPieceCanvas));
+    piecePreview.fillStyle = 'lightgrey';
+    piecePreview.fillRect(0, 0, piecePreview.canvas.width, piecePreview.canvas.height);
+    pieceQueue.unshift(randomPiece());
+    pieceQueue.forEach((upcomingPiece, i) => {
+        piecePreview.fillStyle = getColor(upcomingPiece);
+        iterate(upcomingPiece, drawPiece(piecePreview, { x: 0, y: i * currentPieceCanvasSize }, previewScalingFactor));
+    });
 }
 
-function drawPiece(ctx, offsets = { x: 0, y: 0 }) {
+function drawPiece(ctx, offsets = { x: 0, y: 0 }, scalingFactor = 1) {
+    const size = cellSize * scalingFactor;
     return (i, j) => {
         // we add a 0.5 offset to get crisp lines
-        const x = (j + offsets.x) * cellSize + 0.5;
-        const y = (i + offsets.y) * cellSize + 0.5;
-        ctx.fillRect(x, y, cellSize, cellSize);
-        ctx.strokeRect(x, y, cellSize, cellSize);
+        const x = (j + offsets.x) * size + 0.5;
+        const y = (i + offsets.y) * size + 0.5;
+        ctx.fillRect(x, y, size, size);
+        ctx.strokeRect(x, y, size, size);
     };
 }
 

@@ -1,6 +1,7 @@
 import { fieldHeight, fieldWidth } from './constants.js';
 
 export function collisionVertically(field, piece, piecePosition, distance) {
+    // FIXME upper part of piece (that starts outside) may go beyond fieldboundary causing instant loss
     return piece.some((row, y) => {
         const idOfNextRow = y + piecePosition.y + distance;
         // there cant be a piece outside the field

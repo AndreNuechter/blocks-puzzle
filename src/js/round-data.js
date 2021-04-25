@@ -60,6 +60,5 @@ export default {
 };
 
 function translatePiece() {
-    // TODO why do we need to subtract 3 from x for proper placement?
-    currentPieceCanvas.canvas.style.transform = `translate(calc(${(x - 3) * cellSize}px), ${y * cellSize}px)`;
+    currentPieceCanvas.canvas.style.transform = `translate(calc(${x * cellSize}px), ${y * cellSize}px)`;
 }
