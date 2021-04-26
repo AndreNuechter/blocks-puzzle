@@ -30,16 +30,16 @@ body {
     left: 0;
     transition: opacity 1s;
     user-select: none;
+    opacity: 0;
 }
 
 .fresh,
-.paused,
 .game-over {
     opacity: 1;
 }
 
-.playing {
-    opacity: 0;
+.paused {
+    animation: 1s ease-in 0s infinite alternate both running blink;
 }
 
 #game-over-msg,
@@ -53,4 +53,9 @@ body {
 .game-over #new-game-msg,
 .paused #paused-msg {
     display: block;
+}
+
+@keyframes blink {
+    from { opacity: 0; }
+    to { opacity: 0.75; }
 }

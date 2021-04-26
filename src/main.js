@@ -71,7 +71,6 @@ function handleKeydown({ key }) {
     if (isGamePaused === undefined) {
         startGame();
     } else if (isGamePaused) {
-        // FIXME due to transition on overlay, current piece has moved before it becomes visible
         startAnimation();
     } else if (key === 'ArrowDown') {
         applyGravity();
