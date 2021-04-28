@@ -1,3 +1,4 @@
+import './js/dom-sizing.js';
 import {
     currentPieceCanvasSize,
     dropOffsetX,
@@ -17,27 +18,9 @@ import { fieldCanvas, currentPieceCanvas, piecePreview } from './js/dom-selectio
 import randomPiece, { colors } from './js/pieces.js';
 import roundData from './js/round-data.js';
 
-// +1 to account for outlines
-Object.assign(fieldCanvas.canvas, {
-    width: fieldWidth * cellSize + 1,
-    height: fieldHeight * cellSize + 1
-});
-Object.assign(fieldCanvas.canvas.parentElement.style, {
-    width: fieldWidth * cellSize + 1 + 'px',
-    height: fieldHeight * cellSize + 1 + 'px'
-});
-Object.assign(currentPieceCanvas.canvas, {
-    width: currentPieceCanvasSize * cellSize + 1,
-    height: currentPieceCanvasSize * cellSize + 1
-});
-Object.assign(piecePreview.canvas, {
-    // -1 to save space and since the preview is never rotated
-    width: (currentPieceCanvasSize - 1) * cellSize * previewScalingFactor + 1,
-    height: currentPieceCanvasSize * previewLength * cellSize * previewScalingFactor + 1
-});
-
-// TODO PWA and gh page...icons, manifest, service-worker, mobile input handling...
-// TODO swap-storage for a piece
+// TODO PWA and gh page...icons, manifest, service-worker, (conditional) wake lock...
+// touch input handling...
+// TODO handle device orientation (initial state and changes)
 // TODO show input options on splashscreen
 
 const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
