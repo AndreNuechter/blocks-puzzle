@@ -1,6 +1,7 @@
 body {
     overflow: hidden;
     text-align: center;
+    font-family: cursive;
 }
 
 #canvas-container {

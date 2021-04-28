@@ -75,7 +75,7 @@ function startGame() {
     pieceQueue.forEach((_, i) => {
         pieceQueue[i] = randomPiece();
     });
-    clearCanvas();
+    clearCanvas(fieldCanvas);
     spawnNewPiece();
     startAnimation();
 }
@@ -122,11 +122,10 @@ function applyGravity() {
 }
 
 function lockPiece() {
-    const cb = drawPiece(fieldCanvas, roundData.piecePosition);
     iterate(currentPiece, (y, x, cell) => {
         field[roundData.piecePosition.y + y][roundData.piecePosition.x + x] = cell;
-        cb(y, x);
     });
+    draw2dArray(fieldCanvas, currentPiece, roundData.piecePosition);
 }
 
 function clearLines() {
@@ -139,12 +138,8 @@ function clearLines() {
         field.unshift(...field.splice(y, 1));
     });
     if (cleared > 0) {
-        const cb = drawPiece(fieldCanvas);
-        clearCanvas();
-        iterate(field, (y, x, cell) => {
-            fieldCanvas.fillStyle = colors[cell];
-            cb(y, x);
-        });
+        clearCanvas(fieldCanvas);
+        draw2dArray(fieldCanvas, field, undefined, undefined, true);
         // TODO give bonus points for eg harddrops, t-spins and combos...
         // TODO output name of awarded actions
         roundData.points += lineClearMultipliers[cleared] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1);
@@ -152,42 +147,52 @@ function clearLines() {
     }
 }
 
-function clearCanvas() {
-    fieldCanvas.fillStyle = 'lightgrey';
-    // +1 to account for the the 0.5 offset on pieces
-    fieldCanvas.fillRect(0, 0, fieldWidth * cellSize + 1, fieldHeight * cellSize + 1);
-}
-
-function getColor(piece) {
-    return colors[piece[0].find((v) => v !== 0)];
+function clearCanvas(ctx) {
+    ctx.fillStyle = 'lightgrey';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
 function spawnNewPiece() {
     Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
-    currentPiece = pieceQueue.pop();
-    const fillColor = getColor(currentPiece);
-    fieldCanvas.fillStyle = fillColor;
-    currentPieceCanvas.fillStyle = fillColor;
-    currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
-    iterate(currentPiece, drawPiece(currentPieceCanvas));
-    piecePreview.fillStyle = 'lightgrey';
-    piecePreview.fillRect(0, 0, piecePreview.canvas.width, piecePreview.canvas.height);
-    pieceQueue.unshift(randomPiece());
-    pieceQueue.forEach((upcomingPiece, i) => {
-        piecePreview.fillStyle = getColor(upcomingPiece);
-        iterate(upcomingPiece, drawPiece(piecePreview, { x: 0, y: i * currentPieceCanvasSize }, previewScalingFactor));
-    });
+    setCurrentPiece(progressPieceQueue());
 }
 
-function drawPiece(ctx, offsets = { x: 0, y: 0 }, scalingFactor = 1) {
+
+function setCurrentPiece(piece) {
+    currentPiece = piece;
+    currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
+    draw2dArray(currentPieceCanvas, piece);
+}
+
+
+function progressPieceQueue() {
+    const emittedPiece = pieceQueue.pop();
+    clearCanvas(piecePreview);
+    pieceQueue.unshift(randomPiece());
+    pieceQueue.forEach((upcomingPiece, i) => {
+        draw2dArray(piecePreview, upcomingPiece, { x: 0, y: i * currentPieceCanvasSize }, previewScalingFactor);
+    });
+    return emittedPiece;
+}
+
+function getColor(piece) {
+    // due to the rotation system used, we know one of the two cells is filled
+    return colors[piece[1][1] || piece[2][2]];
+}
+
+function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false) {
     const size = cellSize * scalingFactor;
-    return (i, j) => {
+    if (!variableColors) ctx.fillStyle = getColor(array);
+    iterate(array, (i, j, cell) => {
         // we add a 0.5 offset to get crisp lines
         const x = (j + offsets.x) * size + 0.5;
         const y = (i + offsets.y) * size + 0.5;
+
+        if (variableColors) ctx.fillStyle = colors[cell];
+
         ctx.fillRect(x, y, size, size);
         ctx.strokeRect(x, y, size, size);
-    };
+    });
 }
 
 function translateXPiece(delta = stepSize) {
@@ -199,12 +204,12 @@ function translateXPiece(delta = stepSize) {
 function rotatePiece() {
     // TODO wallkicks
     const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
-    if (!(
-        collisionHorizontally(field, rotatedPiece, roundData.piecePosition, 0)
-        || collisionVertically(field, rotatedPiece, roundData.piecePosition, 0)
-    )) {
-        currentPiece = rotatedPiece;
-        currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
-        iterate(currentPiece, drawPiece(currentPieceCanvas));
+    if (!isColliding(rotatedPiece)) {
+        setCurrentPiece(rotatedPiece);
     }
+}
+
+function isColliding(piece) {
+    return collisionHorizontally(field, piece, roundData.piecePosition, 0)
+        || collisionVertically(field, piece, roundData.piecePosition, 0);
 }
