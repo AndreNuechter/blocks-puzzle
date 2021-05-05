@@ -12,10 +12,10 @@ import {
     previewScalingFactor,
     stepSize
 } from './js/constants.js';
-import { iterate, rotate2dArray } from './js/helper-funcs.js';
-import { collisionHorizontally, collisionVertically } from './js/collision-detection.js';
-import { fieldCanvas, currentPieceCanvas, piecePreview } from './js/dom-selections.js';
-import randomPiece, { colors } from './js/pieces.js';
+import { iterate, lastItem, rotate2dArray } from './js/helper-funcs.js';
+import { collidesHorizontally, collidesVertically, isColliding } from './js/collision-detection.js';
+import { fieldCanvas, currentPieceCanvas, piecePreview, pieceCache } from './js/dom-selections.js';
+import randomPiece, { colors, getColor } from './js/pieces.js';
 import roundData from './js/round-data.js';
 
 // TODO PWA and gh page...icons, manifest, service-worker, (conditional) wake lock...
@@ -25,6 +25,7 @@ import roundData from './js/round-data.js';
 
 const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
 const pieceQueue = new Array(previewLength).fill([]);
+let cachedPiece;
 let currentPiece;
 let isGamePaused;
 let animationRequestId;
@@ -32,25 +33,11 @@ let lastCall;
 
 addKeyDownHandler();
 
-function gameLoop(timestamp) {
-    if (lastCall === undefined) {
-        lastCall = timestamp;
-    }
-
-    animationRequestId = requestAnimationFrame(gameLoop);
-
-    // initially pieces fall at 1 row/sec; after about 300 line-clears at 1 row/frame
-    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
-        lastCall = timestamp;
-        applyGravity();
-    }
-}
-
 function addKeyDownHandler() {
     window.addEventListener('keydown', handleKeydown);
 }
 
-function handleKeydown({ key }) {
+function handleKeydown({ key, ctrlKey }) {
     if (isGamePaused === undefined) {
         startGame();
     } else if (isGamePaused) {
@@ -65,6 +52,22 @@ function handleKeydown({ key }) {
         rotatePiece();
     } else if (key === ' ') {
         suspendAnimation();
+    } else if (ctrlKey) {
+        stashPiece();
+    }
+}
+
+function gameLoop(timestamp) {
+    if (lastCall === undefined) {
+        lastCall = timestamp;
+    }
+
+    animationRequestId = requestAnimationFrame(gameLoop);
+
+    // initially pieces fall at 1 row/sec; after about 300 line-clears at 1 row/frame
+    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
+        lastCall = timestamp;
+        applyGravity();
     }
 }
 
@@ -107,8 +110,22 @@ function endGame() {
     document.dispatchEvent(new Event('game-over'));
 }
 
+function translateXPiece(delta = stepSize) {
+    if (!collidesHorizontally(field, currentPiece, roundData.piecePosition, delta)) {
+        roundData.piecePosition.x += delta;
+    }
+}
+
+function rotatePiece() {
+    // TODO wallkicks
+    const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
+    if (!isColliding(field, rotatedPiece, roundData.piecePosition)) {
+        setCurrentPiece(rotatedPiece);
+    }
+}
+
 function applyGravity() {
-    if (!collisionVertically(field, currentPiece, roundData.piecePosition, stepSize)) {
+    if (!collidesVertically(field, currentPiece, roundData.piecePosition, stepSize)) {
         roundData.piecePosition.y += stepSize;
     } else {
         if (roundData.piecePosition.y < 0) {
@@ -147,23 +164,37 @@ function clearLines() {
     }
 }
 
-function clearCanvas(ctx) {
-    ctx.fillStyle = 'lightgrey';
-    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-}
-
 function spawnNewPiece() {
     Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
     setCurrentPiece(progressPieceQueue());
 }
 
+function stashPiece() {
+    if (!isColliding(field, cachedPiece || lastItem(pieceQueue), roundData.piecePosition)) {
+        if (cachedPiece) {
+            [currentPiece, cachedPiece] = [cachedPiece, currentPiece];
+            setCurrentPiece(currentPiece);
+            setCachedPiece(cachedPiece);
+        } else {
+            setCachedPiece(currentPiece);
+            setCurrentPiece(progressPieceQueue());
+        }
+    }
+}
 
+// TODO currentPiece should be prop of roundData
 function setCurrentPiece(piece) {
     currentPiece = piece;
     currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
     draw2dArray(currentPieceCanvas, piece);
 }
 
+// TODO cachedPiece should be prop of roundData
+function setCachedPiece(piece) {
+    cachedPiece = piece;
+    clearCanvas(pieceCache);
+    draw2dArray(pieceCache, piece, undefined, previewScalingFactor);
+}
 
 function progressPieceQueue() {
     const emittedPiece = pieceQueue.pop();
@@ -175,9 +206,9 @@ function progressPieceQueue() {
     return emittedPiece;
 }
 
-function getColor(piece) {
-    // due to the rotation system used, we know one of the two cells is filled
-    return colors[piece[1][1] || piece[2][2]];
+function clearCanvas(ctx) {
+    ctx.fillStyle = 'lightgrey';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
 function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false) {
@@ -193,23 +224,4 @@ function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, va
         ctx.fillRect(x, y, size, size);
         ctx.strokeRect(x, y, size, size);
     });
-}
-
-function translateXPiece(delta = stepSize) {
-    if (!collisionHorizontally(field, currentPiece, roundData.piecePosition, delta)) {
-        roundData.piecePosition.x += delta;
-    }
-}
-
-function rotatePiece() {
-    // TODO wallkicks
-    const rotatedPiece = rotate2dArray(currentPiece, currentPiece.length);
-    if (!isColliding(rotatedPiece)) {
-        setCurrentPiece(rotatedPiece);
-    }
-}
-
-function isColliding(piece) {
-    return collisionHorizontally(field, piece, roundData.piecePosition, 0)
-        || collisionVertically(field, piece, roundData.piecePosition, 0);
 }

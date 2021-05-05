@@ -10,7 +10,7 @@ export function iterate(arr, cb) {
             }
         })
     );
-};
+}
 
 export function lastItem(arr) {
     return arr[lastId(arr)];

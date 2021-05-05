@@ -25,3 +25,8 @@ export const colors = [
 export default function randomPiece() {
     return pieces[randomId(pieces.length)];
 }
+
+export function getColor(piece) {
+    // due to the rotation system used, we know one of the two cells is filled
+    return colors[piece[1][1] || piece[2][2]];
+}

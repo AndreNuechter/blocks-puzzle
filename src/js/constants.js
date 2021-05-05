@@ -1,5 +1,5 @@
 export const dropOffsetX = 4;
-export const dropOffsetY = -1;
+export const dropOffsetY = 0;
 // TODO base this on viewport-size
 export const cellSize = 30;
 export const currentPieceCanvasSize = 4;
