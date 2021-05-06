@@ -25,7 +25,7 @@ export function randomId(arrLength) {
 }
 
 // thx to: https://stackoverflow.com/a/42535/7732282
-export function rotate2dArray(arr, length) {
+export function rotate2dArray(arr, length = arr.length) {
     const res = Array.from({ length }, () => new Array(length));
 
     for (let y = 0; y < length; y += 1) {

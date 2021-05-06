@@ -34,8 +34,8 @@ body {
     opacity: 0;
 }
 
-.fresh,
-.game-over {
+#overlay.fresh,
+#overlay.game-over {
     opacity: 1;
 }
 

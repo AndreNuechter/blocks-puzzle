@@ -8,6 +8,8 @@ import {
     previewScalingFactor
 } from './constants.js';
 
+// TODO handle device orientation (initial state and changes)
+
 // +1 to account for outlines
 Object.assign(fieldCanvas.canvas, {
     width: fieldWidth * cellSize + 1,

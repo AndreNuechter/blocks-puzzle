@@ -1,14 +1,18 @@
-import { cellSize } from './constants.js';
+import { cellSize, previewScalingFactor } from './constants.js';
+import { draw2dArray, clearCanvas } from './canvas-handling.js';
 import {
-    overlay,
-    pointsDisplay,
     clearedLinesCountDisplay,
+    currentPieceCanvas,
     gameSummary,
-    currentPieceCanvas
+    overlay,
+    pieceCache,
+    pointsDisplay
 } from './dom-selections.js';
 
 let points = 0;
 let clearedLinesCount = 0;
+let currentPiece;
+let cachedPiece;
 let x;
 let y;
 
@@ -40,6 +44,22 @@ export default {
     set clearedLinesCount(value) {
         clearedLinesCount = value;
         clearedLinesCountDisplay.textContent = value;
+    },
+    get currentPiece() {
+        return currentPiece;
+    },
+    set currentPiece(piece) {
+        currentPiece = piece;
+        currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
+        draw2dArray(currentPieceCanvas, piece);
+    },
+    get cachedPiece() {
+        return cachedPiece;
+    },
+    set cachedPiece(piece) {
+        cachedPiece = piece;
+        clearCanvas(pieceCache);
+        draw2dArray(pieceCache, piece, undefined, previewScalingFactor);
     },
     piecePosition: {
         get x() {
