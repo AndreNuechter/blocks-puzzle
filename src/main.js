@@ -128,13 +128,9 @@ function applyGravity() {
     if (!collidesVertically(field, roundData.currentPiece, roundData.piecePosition, stepSize)) {
         roundData.piecePosition.y += stepSize;
     } else {
-        if (roundData.piecePosition.y < 0) {
-            endGame();
-        } else {
-            lockPiece();
-            clearLines();
-            spawnNewPiece();
-        }
+        lockPiece();
+        clearLines();
+        spawnNewPiece();
     }
 }
 
@@ -167,6 +163,9 @@ function clearLines() {
 function spawnNewPiece() {
     Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
     roundData.currentPiece = progressPieceQueue();
+    if (isColliding(field, roundData.currentPiece, roundData.piecePosition)) {
+        endGame();
+    }
 }
 
 function stashPiece() {
