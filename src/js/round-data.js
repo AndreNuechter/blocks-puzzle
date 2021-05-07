@@ -1,5 +1,5 @@
-import { cellSize, previewScalingFactor } from './constants.js';
-import { draw2dArray, clearCanvas } from './canvas-handling.js';
+import { previewScalingFactor } from './constants.js';
+import { draw2dArray, clearCanvas, colorCanvasGrey, translateCanvas } from './canvas-handling.js';
 import {
     clearedLinesCountDisplay,
     currentPieceCanvas,
@@ -50,7 +50,7 @@ export default {
     },
     set currentPiece(piece) {
         currentPiece = piece;
-        currentPieceCanvas.clearRect(0, 0, currentPieceCanvas.canvas.width, currentPieceCanvas.canvas.height);
+        clearCanvas(currentPieceCanvas);
         draw2dArray(currentPieceCanvas, piece);
     },
     get cachedPiece() {
@@ -58,7 +58,7 @@ export default {
     },
     set cachedPiece(piece) {
         cachedPiece = piece;
-        clearCanvas(pieceCache);
+        colorCanvasGrey(pieceCache);
         draw2dArray(pieceCache, piece, undefined, previewScalingFactor);
     },
     piecePosition: {
@@ -67,18 +67,15 @@ export default {
         },
         set x(value) {
             x = value;
-            translatePiece();
+            translateCanvas(currentPieceCanvas, x, y);
         },
         get y() {
             return y;
         },
         set y(value) {
             y = value;
-            translatePiece();
+            translateCanvas(currentPieceCanvas, x, y);
         }
-    }
+    },
+    isGamePaused: undefined
 };
-
-function translatePiece() {
-    currentPieceCanvas.canvas.style.transform = `translate(calc(${x * cellSize}px), ${y * cellSize}px)`;
-}

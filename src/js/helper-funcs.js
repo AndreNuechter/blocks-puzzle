@@ -1,4 +1,4 @@
-/** Iterate over a 2d array and execute a callback for each non-zero cell
+/** Iterate over a 2d array of numbers and execute a callback for each non-zero cell
  * @param { number[][] } arr
  * @param { Function } cb
  */
@@ -35,4 +35,9 @@ export function rotate2dArray(arr, length = arr.length) {
     }
 
     return res;
+}
+
+export function getColor(colors, piece) {
+    // due to the rotation system used, we know one of the two cells is filled
+    return colors[piece[1][1] || piece[2][2]];
 }

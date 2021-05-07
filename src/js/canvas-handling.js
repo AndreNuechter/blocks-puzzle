@@ -1,15 +1,18 @@
-import { cellSize } from './constants.js';
-import { colors, getColor } from './pieces.js';
-import { iterate } from './helper-funcs.js';
+import { cellSize, colors } from './constants.js';
+import { getColor, iterate } from './helper-funcs.js';
 
 export function clearCanvas(ctx) {
-    ctx.fillStyle = 'lightgrey';
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+}
+
+export function colorCanvasGrey(ctx) {
+    ctx.fillStyle = colors[0];
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
 export function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false) {
     const size = cellSize * scalingFactor;
-    if (!variableColors) ctx.fillStyle = getColor(array);
+    if (!variableColors) ctx.fillStyle = getColor(colors, array);
     iterate(array, (i, j, cell) => {
         // we add a 0.5 offset to get crisp lines
         const x = (j + offsets.x) * size + 0.5;
@@ -20,4 +23,8 @@ export function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor 
         ctx.fillRect(x, y, size, size);
         ctx.strokeRect(x, y, size, size);
     });
+}
+
+export function translateCanvas(ctx, x, y) {
+    ctx.canvas.style.transform = `translate(${x * cellSize}px, ${y * cellSize}px)`;
 }

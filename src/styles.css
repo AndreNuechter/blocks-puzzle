@@ -2,15 +2,27 @@ body {
     overflow: hidden;
     text-align: center;
     font-family: cursive;
+    box-sizing: border-box;
+}
+
+body * {
+    box-sizing: inherit;
 }
 
 #canvas-container {
     display: inline-flex;
     position: relative;
-    overflow: hidden;
 }
 
-#canvas-container canvas {
+canvas {
+    border: 1px solid black;
+}
+
+#current-piece-canvas {
+    border-color: transparent;
+}
+
+#current-piece-canvas, #field-canvas {
     position: absolute;
 }
 
@@ -30,8 +42,9 @@ body {
     top: 0;
     left: 0;
     transition: opacity 1s;
-    user-select: none;
     opacity: 0;
+    user-select: none;
+    pointer-events: none;
 }
 
 #overlay.fresh,

@@ -1,3 +1,4 @@
+import { fieldHeight, fieldWidth, previewLength } from './constants.js';
 import { randomId } from './helper-funcs.js';
 
 const pieces = Object.values({
@@ -9,24 +10,11 @@ const pieces = Object.values({
     o: [[6, 6], [6, 6]],
     t: [[0, 7, 0], [7, 7, 7], [0, 0, 0]]
 });
+export const pieceQueue = new Array(previewLength).fill([]);
+export const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
 
-export const colors = [
-    null,
-    'yellow',
-    'blue',
-    'red',
-    'green',
-    'purple',
-    'brown',
-    'orange',
-    'beige'
-];
-
-export default function randomPiece() {
+export function getRandomPiece() {
+    // NOTE: some variants draw a random piece from a bag of all 7 tetrominos wo replacement
+    // this ensures a consistently solvable game...
     return pieces[randomId(pieces.length)];
-}
-
-export function getColor(piece) {
-    // due to the rotation system used, we know one of the two cells is filled
-    return colors[piece[1][1] || piece[2][2]];
 }
