@@ -50,6 +50,7 @@ canvas {
 #overlay.fresh,
 #overlay.game-over {
     opacity: 1;
+    pointer-events: all;
 }
 
 .paused {
@@ -67,6 +68,16 @@ canvas {
 .game-over #new-game-msg,
 .paused #paused-msg {
     display: block;
+}
+
+#controls {
+    display: none;
+}
+
+@media (hover: none) {
+    #controls {
+        display: block;
+    }
 }
 
 @keyframes blink {
