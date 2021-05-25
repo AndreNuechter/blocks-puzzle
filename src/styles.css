@@ -3,6 +3,12 @@ body {
     text-align: center;
     font-family: cursive;
     box-sizing: border-box;
+    display: grid;
+    /* if width < 600, place controls below
+    else to the side */
+    grid-template-columns: 100px calc(100% - 300px) 100px 100px;
+    gap: 10px;
+    grid-auto-rows: auto;
 }
 
 body * {
@@ -12,6 +18,8 @@ body * {
 #canvas-container {
     display: inline-flex;
     position: relative;
+    grid-column: 2;
+    grid-row: 1;
 }
 
 canvas {
@@ -28,6 +36,8 @@ canvas {
 
 #hud {
     display: inline-block;
+    grid-column: 3;
+    grid-row: 1;
 }
 
 #overlay {
@@ -68,6 +78,16 @@ canvas {
 .game-over #new-game-msg,
 .paused #paused-msg {
     display: block;
+}
+
+#round-buttons {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#arrow-keys {
+    grid-column: 3;
+    grid-row: 1;
 }
 
 #controls {

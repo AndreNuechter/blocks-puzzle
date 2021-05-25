@@ -14,7 +14,7 @@ export const pieceQueue = new Array(previewLength).fill([]);
 export const field = Array.from({ length: fieldHeight }, () => new Array(fieldWidth));
 
 export function getRandomPiece() {
-    // NOTE: some variants draw a random piece from a bag of all 7 tetrominos wo replacement
+    // NOTE: some variants draw a random piece from a bag of all 7 pieces wo replacement
     // this ensures a consistently solvable game...
     return pieces[randomId(pieces.length)];
 }
