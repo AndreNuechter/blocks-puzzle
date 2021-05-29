@@ -1,14 +1,46 @@
 body {
+    display: grid;
+    gap: 10px;
+    grid-auto-rows: auto;
+    align-items: center;
+}
+
+#canvas-container {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: center;
+}
+
+#hud {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: start;
+}
+
+#round-buttons {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#arrow-keys {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
+}
+
+html {
+    height: 100%;
+}
+
+body {
     overflow: hidden;
     text-align: center;
     font-family: cursive;
     box-sizing: border-box;
-    display: grid;
-    /* if width < 600, place controls below
-    else to the side */
-    grid-template-columns: 100px calc(100% - 300px) 100px 100px;
-    gap: 10px;
-    grid-auto-rows: auto;
+    touch-action: none;
+    user-select: none;
+    margin: 0;
+    height: 100%;
 }
 
 body * {
@@ -18,8 +50,6 @@ body * {
 #canvas-container {
     display: inline-flex;
     position: relative;
-    grid-column: 2;
-    grid-row: 1;
 }
 
 canvas {
@@ -36,8 +66,6 @@ canvas {
 
 #hud {
     display: inline-block;
-    grid-column: 3;
-    grid-row: 1;
 }
 
 #overlay {
@@ -47,7 +75,7 @@ canvas {
     align-items: center;
     background: white;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     position: fixed;
     top: 0;
     left: 0;
@@ -80,22 +108,12 @@ canvas {
     display: block;
 }
 
-#round-buttons {
-    grid-column: 1;
-    grid-row: 1;
-}
-
-#arrow-keys {
-    grid-column: 3;
-    grid-row: 1;
-}
-
-#controls {
+.control-element {
     display: none;
 }
 
 @media (hover: none) {
-    #controls {
+    .control-element {
         display: block;
     }
 }

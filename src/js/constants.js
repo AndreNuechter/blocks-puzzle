@@ -1,6 +1,6 @@
 export const dropOffsetX = 4;
 export const dropOffsetY = 0;
-export const cellSize = Math.min(30, (window.innerHeight - 100) / 20);
+export const cellSize = Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10);
 export const currentPieceCanvasSize = 4;
 export const previewScalingFactor = 0.5;
 export const fieldHeight = 20;
