@@ -1,4 +1,5 @@
-import { cellSize, colors } from './constants.js';
+import { colors } from './constants.js';
+import { cellSize } from './dom-sizing.js';
 import { getColor, iterate } from './helper-funcs.js';
 
 export function clearCanvas(ctx) {
@@ -11,7 +12,7 @@ export function colorCanvasGrey(ctx) {
 }
 
 export function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false) {
-    const size = cellSize * scalingFactor;
+    const size = cellSize.value * scalingFactor;
     if (!variableColors) ctx.fillStyle = getColor(colors, array);
     iterate(array, (i, j, cell) => {
         // we add a 0.5 offset to get crisp lines
@@ -26,5 +27,5 @@ export function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor 
 }
 
 export function translateCanvas(ctx, x, y) {
-    ctx.canvas.style.transform = `translate(${x * cellSize}px, ${y * cellSize}px)`;
+    ctx.canvas.style.transform = `translate(${x * cellSize.value}px, ${y * cellSize.value}px)`;
 }
