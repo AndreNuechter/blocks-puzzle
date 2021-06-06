@@ -16,7 +16,7 @@ const [handler, downEvent, upEvent] = 'ontouchend' in window
     : [handleKeydown, 'keydown', 'keyup'];
 const once = { once: true };
 
-if (upEvent !== 'keyUp') {
+if (upEvent !== 'keyup') {
     newGameMsg.textContent = 'Tap screen to start a new Game.';
     pauseMsg.textContent = 'Paused. Tap screen to continue.';
 }
