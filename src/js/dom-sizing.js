@@ -10,6 +10,7 @@ import { field, pieceQueue } from './game-objects.js';
 import { clearCanvas, colorCanvasGrey, draw2dArray, translateCanvas } from './canvas-handling.js';
 import roundData from './round-data.js';
 
+const pixelRatio = window.devicePixelRatio || 1;
 export const cellSize = { value: undefined };
 
 setSizes();
@@ -19,7 +20,7 @@ window.addEventListener('resize', () => {
 });
 
 function setSizes() {
-    const value = Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10);
+    const value = Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10) * pixelRatio;
     cellSize.value = value;
 
     // +1 to account for outlines

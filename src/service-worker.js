@@ -1,5 +1,5 @@
 const appName = 'block-puzzle';
-const appVersion = '0.1';
+const appVersion = '0.2';
 const cacheName = `${appName}-v${appVersion}`;
 
 self.addEventListener('activate', (event) => {
