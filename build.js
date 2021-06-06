@@ -2,7 +2,8 @@ import { emptyDir, copy } from "https://deno.land/std@0.95.0/fs/mod.ts";
 import { Language, minify } from "https://deno.land/x/minifier/mod.ts";
 
 // clear docs folder or create it if it doesnt exist
-emptyDir("./docs");
+// FIXME this may lead to pushing deletion of docs/index.html!
+await emptyDir("./docs");
 
 // TODO it may be possible to directly minify uint8array (which is returned by the run)... minify also has a cli so we could propably do all this in .sh
 // minify html and css into docs
