@@ -1,3 +1,5 @@
+export const newGameMsg = document.getElementById('new-game-msg');
+export const pauseMsg = document.getElementById('paused-msg');
 export const overlay = document.getElementById('overlay');
 export const fieldCanvas = document.getElementById('field-canvas').getContext('2d', { alpha: false });
 export const currentPieceCanvas = document.getElementById('current-piece-canvas').getContext('2d');

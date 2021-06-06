@@ -1,4 +1,5 @@
 import { stepSize, touchInputDelay } from './constants.js';
+import { newGameMsg, pauseMsg } from './dom-selections.js';
 import {
     applyGravity,
     rotatePiece,
@@ -14,6 +15,11 @@ const [handler, downEvent, upEvent] = 'ontouchend' in window
     ? [handlePointerdown, 'pointerdown', 'pointerup']
     : [handleKeydown, 'keydown', 'keyup'];
 const once = { once: true };
+
+if (upEvent !== 'keyUp') {
+    newGameMsg.textContent = 'Tap screen to start a new Game.';
+    pauseMsg.textContent = 'Paused. Tap screen to continue.';
+}
 
 document.addEventListener('game-over', () => {
     // only allow starting a new game after up,
