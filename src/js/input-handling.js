@@ -32,9 +32,7 @@ document.addEventListener('game-over', () => {
     );
 });
 
-export default addInputHandler();
-
-function addInputHandler() {
+export default function addInputHandler() {
     window.addEventListener(downEvent, handler);
 }
 
