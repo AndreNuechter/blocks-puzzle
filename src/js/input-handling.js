@@ -63,16 +63,21 @@ function handlePointerdown({ target: { dataset: { name } } }) {
         startAnimation();
     } else if (name === 'ArrowDown') {
         repeatTillPointerup(applyGravity);
+        vibrate();
     } else if (name === 'ArrowLeft') {
         repeatTillPointerup(() => translateXPiece(-stepSize));
+        vibrate();
     } else if (name === 'ArrowRight') {
         repeatTillPointerup(() => translateXPiece(stepSize));
+        vibrate();
     } else if (name === 'ArrowUp') {
         rotatePiece();
+        vibrate();
     } else if (name === 'a') {
         suspendAnimation();
     } else if (name === 'b') {
         stashPiece();
+        vibrate();
     }
 }
 
@@ -84,4 +89,8 @@ function repeatTillPointerup(action) {
         () => clearInterval(intervalId),
         once
     );
+}
+
+function vibrate() {
+    window.navigator.vibrate(50);
 }
