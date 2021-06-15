@@ -62,14 +62,20 @@ function handlePointerdown({ target: { dataset: { name } } }) {
     } else if (roundData.isGamePaused) {
         startAnimation();
     } else if (name === 'ArrowDown') {
-        repeatTillPointerup(applyGravity);
-        vibrate();
+        repeatTillPointerup(() => {
+            applyGravity();
+            vibrate();
+        });
     } else if (name === 'ArrowLeft') {
-        repeatTillPointerup(() => translateXPiece(-stepSize));
-        vibrate();
+        repeatTillPointerup(() => {
+            translateXPiece(-stepSize);
+            vibrate();
+        });
     } else if (name === 'ArrowRight') {
-        repeatTillPointerup(() => translateXPiece(stepSize));
-        vibrate();
+        repeatTillPointerup(() => {
+            translateXPiece(stepSize);
+            vibrate();
+        });
     } else if (name === 'ArrowUp') {
         rotatePiece();
         vibrate();
@@ -92,5 +98,5 @@ function repeatTillPointerup(action) {
 }
 
 function vibrate() {
-    window.navigator.vibrate(50);
+    window.navigator.vibrate(touchInputDelay / 2);
 }

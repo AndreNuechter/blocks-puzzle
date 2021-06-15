@@ -122,6 +122,7 @@ canvas {
 
 .control-element {
     display: none;
+    transform: scale(1.5);
 }
 
 @media (hover: none) {

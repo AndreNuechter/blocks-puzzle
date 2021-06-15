@@ -73,6 +73,7 @@ export function translateXPiece(delta) {
 export function rotatePiece() {
     // TODO wallkicks
     const rotatedPiece = rotate2dArray(roundData.currentPiece);
+    // FIXME throws when done early and rotation is outside field
     if (!isColliding(field, rotatedPiece, roundData.piecePosition)) {
         roundData.currentPiece = rotatedPiece;
     }
