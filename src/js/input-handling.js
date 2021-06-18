@@ -32,7 +32,9 @@ document.addEventListener('game-over', () => {
     );
 });
 
-export default function addInputHandler() {
+export default (() => addInputHandler())();
+
+function addInputHandler() {
     window.addEventListener(downEvent, handler);
 }
 
@@ -98,5 +100,5 @@ function repeatTillPointerup(action) {
 }
 
 function vibrate() {
-    window.navigator.vibrate(touchInputDelay / 2);
+    window.navigator.vibrate(touchInputDelay / 3);
 }
