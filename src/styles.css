@@ -1,4 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 body {
+    font-family: 'VT323', monospace;
+    font-size: 1.5rem;
     display: grid;
     gap: 10px;
     grid-auto-rows: auto;
@@ -47,7 +51,6 @@ html {
 body {
     overflow: hidden;
     text-align: center;
-    font-family: cursive;
     box-sizing: border-box;
     touch-action: none;
     user-select: none;
