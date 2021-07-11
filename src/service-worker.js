@@ -1,6 +1,6 @@
 const appName = 'block-puzzle';
-const appVersion = '0.7';
-const cacheName = `${appName}-v${appVersion}`;
+const appVersion = '#!#';
+const cacheName = `${appName}-r${appVersion}`;
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
@@ -20,7 +20,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         (async () => {
             let response = await self.caches.match(event.request);
-            if (response) return response;
+            if (response && appVersion !== '#!#') return response;
             response = await fetch(event.request);
             const cache = await self.caches.open(cacheName);
             cache.put(event.request, response.clone());

@@ -10,8 +10,7 @@ const html = await Deno.readTextFile("./src/index.html");
 await minifyAndMoveFile("./docs/index.html", "HTML", html);
 const css = await Deno.readTextFile("./src/styles.css");
 await minifyAndMoveFile("./docs/styles.css", "CSS", css);
-// create bundle, minify it into docs
-// TODO one of the two below steps rms exported iifes if they're one-line lambdas wo curlies
+// create bundle and minify it into docs
 const js = new TextDecoder().decode(await Deno.run({
     cmd: ["deno", "bundle", "./src/main.js"],
     stdout: "piped"
@@ -19,7 +18,7 @@ const js = new TextDecoder().decode(await Deno.run({
 await minifyAndMoveFile("./docs/main.js", "JS", js);
 // minify service-worker
 const sw = await Deno.readTextFile("./src/service-worker.js");
-await minifyAndMoveFile("./docs/service-worker.js", "JS", sw);
+await minifyAndMoveFile("./docs/service-worker.js", "JS", sw.replace('#!#', Date.now()));
 // copy images and manifest into docs
 copy("./src/manifest.json", "./docs/manifest.json");
 copy("./src/images", "./docs/images");
