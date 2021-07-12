@@ -1,8 +1,60 @@
+/* font */
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 body {
     font-family: 'VT323', monospace;
     font-size: 1.5rem;
+}
+
+/* vars */
+:root {
+    --border-color: #000;
+    --bg-color: #8fe9aa;
+    --theme-color: #fff;
+}
+
+/* general */
+html {
+    height: 100%;
+}
+
+body {
+    overflow: hidden;
+    text-align: center;
+    box-sizing: border-box;
+    touch-action: none;
+    user-select: none;
+    margin: 0;
+    height: 100%;
+}
+
+body * {
+    box-sizing: inherit;
+}
+
+#canvas-container {
+    display: inline-flex;
+    position: relative;
+}
+
+canvas {
+    border: 1px solid var(--border-color);
+}
+
+#current-piece-canvas {
+    border-color: transparent;
+}
+
+#current-piece-canvas, #field-canvas {
+    position: absolute;
+}
+
+#hud {
+    display: inline-block;
+}
+
+/* grid */
+body {
     display: grid;
     gap: 10px;
     grid-auto-rows: auto;
@@ -44,45 +96,7 @@ body {
     }
 }
 
-html {
-    height: 100%;
-}
-
-body {
-    overflow: hidden;
-    text-align: center;
-    box-sizing: border-box;
-    touch-action: none;
-    user-select: none;
-    margin: 0;
-    height: 100%;
-}
-
-body * {
-    box-sizing: inherit;
-}
-
-#canvas-container {
-    display: inline-flex;
-    position: relative;
-}
-
-canvas {
-    border: 1px solid black;
-}
-
-#current-piece-canvas {
-    border-color: transparent;
-}
-
-#current-piece-canvas, #field-canvas {
-    position: absolute;
-}
-
-#hud {
-    display: inline-block;
-}
-
+/* overlay */
 #overlay {
     display: flex;
     flex-direction: column;
@@ -123,18 +137,23 @@ canvas {
     display: block;
 }
 
+@keyframes blink {
+    from { opacity: 0; }
+    to { opacity: 0.75; }
+}
+
+/* control elements */
 .control-element {
     display: none;
-    transform: scale(1.5);
+    transform: scale(1.75);
+}
+
+.control-element * {
+    fill: url(#button-sheen);
 }
 
 @media (hover: none) {
     .control-element {
         display: block;
     }
-}
-
-@keyframes blink {
-    from { opacity: 0; }
-    to { opacity: 0.75; }
 }
