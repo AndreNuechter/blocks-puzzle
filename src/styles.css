@@ -8,7 +8,7 @@ body {
 
 /* vars */
 :root {
-    --border-color: #000;
+    --border-color: #5a5958;
     --bg-color: #8fe9aa;
     --theme-color: #fff;
 }
@@ -19,6 +19,7 @@ html {
 }
 
 body {
+    background: var(--bg-color);
     overflow: hidden;
     text-align: center;
     box-sizing: border-box;
@@ -35,6 +36,15 @@ body * {
 #canvas-container {
     display: inline-flex;
     position: relative;
+}
+
+
+canvas {
+    border: 1px solid var(--border-color);
+}
+
+canvas:not(#current-piece-canvas) {
+    box-shadow: 5px 5px 0 var(--border-color);
 }
 
 canvas {
@@ -102,7 +112,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: white;
+    background: var(--bg-color);
     height: 100vh;
     width: 100%;
     position: fixed;
@@ -121,7 +131,13 @@ body {
 }
 
 .paused {
-    animation: 1s ease-in 0s infinite alternate both running blink;
+    animation-name: blink;
+    animation-delay: 0s;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-fill-mode: both;
 }
 
 #game-over-msg,
@@ -139,7 +155,7 @@ body {
 
 @keyframes blink {
     from { opacity: 0; }
-    to { opacity: 0.75; }
+    to { opacity: 1; }
 }
 
 /* control elements */
