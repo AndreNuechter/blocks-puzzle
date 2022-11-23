@@ -1,0 +1,21 @@
+{
+    "tasks": {
+        "build": "deno run --unstable --allow-read --allow-write --allow-run deno-tasks/build.js",
+        "deploy": "git stash --all && deno task build && git add docs/. && git commit --amend --no-edit && git push --all"
+    },
+    "lint": {
+        "files": {
+            "include": [
+                "src/"
+            ]
+        },
+        "rules": {
+            "tags": [
+                "recommended"
+            ],
+            "exclude": [
+                "no-window-prefix"
+            ]
+        }
+    }
+}
