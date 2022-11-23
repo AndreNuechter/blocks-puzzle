@@ -48,7 +48,7 @@ function setSizes() {
 
 function redrawCanvases() {
     colorCanvasGrey(fieldCanvas);
-    draw2dArray(fieldCanvas, field, undefined, undefined, true);
+    draw2dArray(fieldCanvas, field, { variableColors: true });
 
     clearCanvas(currentPieceCanvas);
     draw2dArray(currentPieceCanvas, roundData.currentPiece);
@@ -60,14 +60,20 @@ function redrawCanvases() {
             draw2dArray(
                 piecePreview,
                 upcomingPiece,
-                { x: 0, y: i * currentPieceCanvasSize },
-                previewScalingFactor
+                {
+                    offsets: { x: 0, y: i * currentPieceCanvasSize },
+                    scalingFactor: previewScalingFactor
+                }
             );
         });
     }
 
     colorCanvasGrey(pieceCache);
     if (roundData.cachedPiece) {
-        draw2dArray(pieceCache, roundData.cachedPiece, undefined, previewScalingFactor);
+        draw2dArray(
+            pieceCache,
+            roundData.cachedPiece,
+            { scalingFactor: previewScalingFactor }
+        );
     }
 }

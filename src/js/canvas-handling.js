@@ -11,9 +11,17 @@ export function colorCanvasGrey(ctx) {
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 }
 
-export function draw2dArray(ctx, array, offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false) {
+export function draw2dArray(
+    ctx,
+    array,
+    { offsets = { x: 0, y: 0 }, scalingFactor = 1, variableColors = false } = {
+        offsets: { x: 0, y: 0 }, scalingFactor: 1, variableColors: false
+    }
+) {
     const size = cellSize.value * scalingFactor;
+
     if (!variableColors) ctx.fillStyle = getColor(colors, array);
+
     iterate(array, (i, j, cell) => {
         // we add a 0.5 offset to get crisp lines
         const x = (j + offsets.x) * size + 0.5;

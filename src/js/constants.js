@@ -5,6 +5,7 @@ export const previewScalingFactor = 0.5;
 export const fieldHeight = 20;
 export const fieldWidth = 10;
 export const stepSize = 1;
+export const lineClearBaseAnimationDelay = 350;
 export const lineClearMultipliers = [0, 100, 300, 500, 800];
 export const initialDropDelay = 1000;
 export const touchInputDelay = 100;

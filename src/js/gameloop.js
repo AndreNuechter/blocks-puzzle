@@ -5,29 +5,47 @@ import {
     dropOffsetY,
     lineClearMultipliers,
     previewScalingFactor,
-    stepSize
+    stepSize,
+    lineClearBaseAnimationDelay,
+colors,
 } from './constants.js';
 import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
-// TODO turn these into modules...a canvas should change when the associated array does
+// TODO turn these into modules...a canvas should change when the associated array does...we also need reset capabilities for resizing
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
 import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
 import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
+import { cellSize } from './dom-sizing.js';
 import roundData from './round-data.js';
 
+const lineClearAnimationDelay = {
+    active: false,
+    nextTick: null
+};
 let animationRequestId;
-let lastCall;
+let lastTick;
 
 function gameLoop(timestamp) {
-    if (lastCall === undefined) {
-        lastCall = timestamp;
+    if (lastTick === undefined) {
+        lastTick = timestamp;
     }
 
     animationRequestId = requestAnimationFrame(gameLoop);
 
+    if (lineClearAnimationDelay.active) {
+        // redraw the changed playing-field once the delay has run out
+        if (timestamp < lineClearAnimationDelay.nextTick) {
+            return;
+        } else {
+            lineClearAnimationDelay.active = false;
+            colorCanvasGrey(fieldCanvas);
+            draw2dArray(fieldCanvas, field, { variableColors: true });
+        }
+    }
+
     // initially pieces fall at 1 row/sec; after about 300 line-clears at 1 row/frame
-    if ((timestamp - lastCall) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
-        lastCall = timestamp;
+    if ((timestamp - lastTick) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
+        lastTick = timestamp;
         applyGravity();
     }
 }
@@ -60,7 +78,7 @@ export function suspendAnimation() {
 export function endGame() {
     suspendAnimation();
     roundData.isGamePaused = undefined;
-    lastCall = undefined;
+    lastTick = undefined;
     document.dispatchEvent(new Event('game-over'));
 }
 
@@ -92,25 +110,40 @@ function lockPiece() {
     iterate(roundData.currentPiece, (y, x, cell) => {
         field[roundData.piecePosition.y + y][roundData.piecePosition.x + x] = cell;
     });
-    draw2dArray(fieldCanvas, roundData.currentPiece, roundData.piecePosition);
+    draw2dArray(fieldCanvas, roundData.currentPiece, { offsets: roundData.piecePosition });
 }
 
 function clearLines() {
-    // TODO animate line-clearing
-    let cleared = 0;
-    field.forEach((row, y) => {
-        if (row.some(cell => cell === 0)) return;
-        row.fill(0);
-        cleared += 1;
-        field.unshift(...field.splice(y, 1));
-    });
-    if (cleared > 0) {
-        colorCanvasGrey(fieldCanvas);
-        draw2dArray(fieldCanvas, field, undefined, undefined, true);
-        // TODO give bonus points for eg harddrops, t-spins and combos...
-        // TODO output name of rewarded actions + given points
-        roundData.points += lineClearMultipliers[cleared] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1);
-        roundData.clearedLinesCount += cleared;
+    const indicesOfClearedRows = field.reduce((result, row, y) => {
+        if (row.some(cell => cell === 0)) return result;
+        result.push(y);
+        return result;
+    }, []);
+
+    if (indicesOfClearedRows.length > 0) {
+        // give points and add cleared lines
+        // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?)...
+        // and output name of rewarded actions + given points
+        Object.assign(roundData, {
+            points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
+            clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length
+        });
+        Object.assign(lineClearAnimationDelay, {
+            active: true,
+            nextTick: lastTick + lineClearBaseAnimationDelay * indicesOfClearedRows.length
+        });
+
+        fieldCanvas.fillStyle = colors[0];
+        // for ea cleared row,
+        // draw a grey, row-sized rect over fieldCanvas, starting at [0, y],
+        // remove and clear that row, and
+        // re-add the row at the top of the field
+        // TODO prevent new piece being spawned before the delay is over
+        // TODO prevent removing border of pieces one below (which is better than letting the bottom-border of the cleared row remain)
+        indicesOfClearedRows.forEach(y => {
+            fieldCanvas.fillRect(0, y * cellSize.value, fieldCanvas.canvas.width, cellSize.value + 1);
+            field.unshift(...field.splice(y, 1).map(row => row.fill(0)));
+        });
     }
 }
 
@@ -145,8 +178,10 @@ function progressPieceQueue() {
         draw2dArray(
             piecePreview,
             upcomingPiece,
-            { x: 0, y: i * currentPieceCanvasSize },
-            previewScalingFactor
+            {
+                offsets: { x: 0, y: i * currentPieceCanvasSize },
+                scalingFactor: previewScalingFactor
+            }
         );
     });
     return emittedPiece;

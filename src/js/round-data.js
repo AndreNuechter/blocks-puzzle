@@ -59,7 +59,7 @@ export default {
     set cachedPiece(piece) {
         cachedPiece = piece;
         colorCanvasGrey(pieceCache);
-        draw2dArray(pieceCache, piece, undefined, previewScalingFactor);
+        draw2dArray(pieceCache, piece, { scalingFactor: previewScalingFactor });
     },
     piecePosition: {
         get x() {
