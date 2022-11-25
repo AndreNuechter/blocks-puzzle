@@ -87,7 +87,7 @@ export function translateXPiece(delta) {
 }
 
 export function rotatePiece() {
-    // TODO wallkicks
+    // TODO wallkicks...meaning if a rotation is refused, try again while moving the rotated piece 1 (and then 2) blocks away from the closest wall
     const rotatedPiece = rotate2dArray(roundData.currentPiece);
     if (!isColliding(field, rotatedPiece, roundData.piecePosition)) {
         roundData.currentPiece = rotatedPiece;

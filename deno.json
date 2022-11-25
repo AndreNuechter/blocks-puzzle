@@ -1,6 +1,6 @@
 {
     "tasks": {
-        "local_preview": "cd src && deno run --allow-net --allow-read=. https://deno.land/std@0.144.0/http/file_server.ts",
+        "dev": "cd src && deno run --allow-net --allow-read=. https://deno.land/std@0.144.0/http/file_server.ts",
         "build": "deno run --unstable --allow-read --allow-write --allow-run deno-tasks/build.js",
         "deploy": "git stash --all && deno task build && git add docs/. && git commit --amend --no-edit && git push --all"
     },
