@@ -116,6 +116,7 @@ function lockPiece() {
 function clearLines() {
     const indicesOfClearedRows = field.reduce((result, row, y) => {
         if (row.some(cell => cell === 0)) return result;
+        row.fill(0); // clear the row
         result.push(y);
         return result;
     }, []);
@@ -128,22 +129,18 @@ function clearLines() {
             points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
             clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length
         });
+        // TODO prevent new piece being spawned before the delay is over
         Object.assign(lineClearAnimationDelay, {
             active: true,
             nextTick: lastTick + lineClearBaseAnimationDelay * indicesOfClearedRows.length
         });
 
-        fieldCanvas.fillStyle = colors[0];
-        // for ea cleared row,
-        // draw a grey, row-sized rect over fieldCanvas, starting at [0, y],
-        // remove and clear that row, and
-        // re-add the row at the top of the field
-        // TODO prevent new piece being spawned before the delay is over
-        // TODO prevent removing border of pieces one below (which is better than letting the bottom-border of the cleared row remain)...maybe achieved if we set all cleared rows to 0 and then just redraw the entire field
-        indicesOfClearedRows.forEach(y => {
-            fieldCanvas.fillRect(0, y * cellSize.value, fieldCanvas.canvas.width, cellSize.value + 1);
-            field.unshift(...field.splice(y, 1).map(row => row.fill(0)));
-        });
+        // re-draw field with gaps where cleared rows were
+        colorCanvasGrey(fieldCanvas);
+        draw2dArray(fieldCanvas, field, { variableColors: true });
+
+        // move the cleared row(s) to the top of the field, closing the gaps
+        indicesOfClearedRows.forEach(y => field.unshift(...field.splice(y, 1)));
     }
 }
 
