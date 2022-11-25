@@ -26,7 +26,7 @@ document.addEventListener('pause-game', () => {
 });
 
 document.addEventListener('game-over', () => {
-    gameSummary.textContent = `${points} points via ${clearedLinesCount} cleared lines`;
+    gameSummary.textContent = `You got ${points} points for clearing ${clearedLinesCount} lines`;
     overlay.classList.replace('paused', 'game-over');
 });
 
