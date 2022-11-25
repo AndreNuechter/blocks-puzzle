@@ -19,6 +19,17 @@ const once = { once: true };
 if (upEvent !== 'keyup') {
     newGameMsg.textContent = 'Tap screen to start a new Game.';
     pauseMsg.textContent = 'Paused. Tap screen to continue.';
+
+    // invert tint on pressed btns
+    const pressedCssClass = 'pressed-down';
+    const pressTarget = ({ target }) => target.classList.add(pressedCssClass);
+    const releaseTarget = ({ target }) => target.classList.remove(pressedCssClass);
+    // undo tint on release or exit
+    document.querySelectorAll('.control-element').forEach(element => {
+        element.addEventListener(downEvent, pressTarget)
+        element.addEventListener(upEvent, releaseTarget);
+        element.addEventListener('pointerleave', releaseTarget);
+    });
 }
 
 document.addEventListener('game-over', () => {

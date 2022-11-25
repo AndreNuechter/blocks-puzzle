@@ -168,6 +168,10 @@ body {
     fill: url(#button-sheen);
 }
 
+.pressed-down {
+    fill: url(#button-sheen-reverse)
+}
+
 @media (hover: none) {
     .control-element {
         display: block;

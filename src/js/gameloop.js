@@ -139,7 +139,7 @@ function clearLines() {
         // remove and clear that row, and
         // re-add the row at the top of the field
         // TODO prevent new piece being spawned before the delay is over
-        // TODO prevent removing border of pieces one below (which is better than letting the bottom-border of the cleared row remain)
+        // TODO prevent removing border of pieces one below (which is better than letting the bottom-border of the cleared row remain)...maybe achieved if we set all cleared rows to 0 and then just redraw the entire field
         indicesOfClearedRows.forEach(y => {
             fieldCanvas.fillRect(0, y * cellSize.value, fieldCanvas.canvas.width, cellSize.value + 1);
             field.unshift(...field.splice(y, 1).map(row => row.fill(0)));
