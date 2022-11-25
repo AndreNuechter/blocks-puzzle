@@ -130,6 +130,14 @@ body {
     pointer-events: all;
 }
 
+#game-summary {
+    display: none;
+}
+
+.game-over #game-summary {
+    display: block;
+}
+
 .paused {
     animation-name: blink;
     animation-delay: 0s;
