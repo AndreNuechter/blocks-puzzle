@@ -6,8 +6,7 @@ import {
     lineClearMultipliers,
     previewScalingFactor,
     stepSize,
-    lineClearBaseAnimationDelay,
-colors,
+    lineClearBaseAnimationDelay
 } from './constants.js';
 import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
@@ -15,7 +14,6 @@ import { collidesHorizontally, collidesVertically, isColliding } from './collisi
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
 import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
 import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
-import { cellSize } from './dom-sizing.js';
 import roundData from './round-data.js';
 
 const lineClearAnimationDelay = {
