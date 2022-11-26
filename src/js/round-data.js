@@ -77,5 +77,9 @@ export default {
             translateCanvas(currentPieceCanvas, x, y);
         }
     },
-    isGamePaused: undefined
+    isGamePaused: undefined,
+    lineClearAnimationDelay: {
+        active: false,
+        nextTick: null
+    }
 };

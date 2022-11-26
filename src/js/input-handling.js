@@ -50,6 +50,7 @@ function addInputHandler() {
 }
 
 function handleKeydown({ key, ctrlKey }) {
+    if (roundData.lineClearAnimationDelay.active) return;
     if (roundData.isGamePaused === undefined) {
         startGame();
     } else if (roundData.isGamePaused) {
@@ -70,6 +71,7 @@ function handleKeydown({ key, ctrlKey }) {
 }
 
 function handlePointerdown({ target: { dataset: { name } } }) {
+    if (roundData.lineClearAnimationDelay.active) return;
     if (roundData.isGamePaused === undefined) {
         startGame();
     } else if (roundData.isGamePaused) {

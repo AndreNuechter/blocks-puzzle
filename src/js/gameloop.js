@@ -16,10 +16,6 @@ import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
 import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
 import roundData from './round-data.js';
 
-const lineClearAnimationDelay = {
-    active: false,
-    nextTick: null
-};
 let animationRequestId;
 let lastTick;
 
@@ -30,12 +26,12 @@ function gameLoop(timestamp) {
 
     animationRequestId = requestAnimationFrame(gameLoop);
 
-    if (lineClearAnimationDelay.active) {
+    if (roundData.lineClearAnimationDelay.active) {
         // redraw the changed playing-field once the delay has run out
-        if (timestamp < lineClearAnimationDelay.nextTick) {
+        if (timestamp < roundData.lineClearAnimationDelay.nextTick) {
             return;
         } else {
-            lineClearAnimationDelay.active = false;
+            roundData.lineClearAnimationDelay.active = false;
             colorCanvasGrey(fieldCanvas);
             draw2dArray(fieldCanvas, field, { variableColors: true });
         }
@@ -123,14 +119,14 @@ function clearLines() {
         // give points and add cleared lines
         // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?)...
         // and output name of rewarded actions + given points
+        // TODO prevent new piece being spawned before the delay is over
         Object.assign(roundData, {
             points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
-            clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length
-        });
-        // TODO prevent new piece being spawned before the delay is over
-        Object.assign(lineClearAnimationDelay, {
-            active: true,
-            nextTick: lastTick + lineClearBaseAnimationDelay * indicesOfClearedRows.length
+            clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length,
+            lineClearAnimationDelay: {
+                active: true,
+                nextTick: lastTick + lineClearBaseAnimationDelay * indicesOfClearedRows.length
+            }
         });
 
         // re-draw field with gaps where cleared rows were
