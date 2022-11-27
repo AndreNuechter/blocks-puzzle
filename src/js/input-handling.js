@@ -72,6 +72,7 @@ function handleKeydown({ key, ctrlKey }) {
 
 function handlePointerdown({ target: { dataset: { name } } }) {
     if (roundData.lineClearAnimationDelay.active) return;
+
     if (roundData.isGamePaused === undefined) {
         startGame();
     } else if (roundData.isGamePaused) {
@@ -104,7 +105,12 @@ function handlePointerdown({ target: { dataset: { name } } }) {
 
 // this is helpful because pointerdown isnt fired repeatedly like keydown is
 function repeatTillPointerup(action) {
+    // fire the callback once immediately
+    action();
+
+    // fire the callback in an interval until pointerup
     const intervalId = setInterval(action, touchInputDelay);
+
     window.addEventListener(
         upEvent,
         () => clearInterval(intervalId),
