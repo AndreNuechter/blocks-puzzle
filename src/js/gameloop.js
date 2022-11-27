@@ -6,14 +6,15 @@ import {
     lineClearMultipliers,
     previewScalingFactor,
     stepSize,
-    lineClearBaseAnimationDelay
+    lineClearBaseAnimationDelay,
+    fieldWidth
 } from './constants.js';
 import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
 // TODO turn these into modules...a canvas should change when the associated array does...we also need reset capabilities for resizing
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
-import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
-import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
+import { currentPieceCanvas, fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
+import { clearCanvas, colorCanvasGrey, draw2dArray } from './canvas-handling.js';
 import roundData from './round-data.js';
 
 let animationRequestId;
@@ -34,6 +35,7 @@ function gameLoop(timestamp) {
             roundData.lineClearAnimationDelay.active = false;
             colorCanvasGrey(fieldCanvas);
             draw2dArray(fieldCanvas, field, { variableColors: true });
+            spawnNewPiece();
         }
     }
 
@@ -127,7 +129,6 @@ export function applyGravity() {
     } else {
         lockPiece();
         clearLines();
-        spawnNewPiece();
     }
 }
 
@@ -147,10 +148,8 @@ function clearLines() {
     }, []);
 
     if (indicesOfClearedRows.length > 0) {
-        // give points and add cleared lines
-        // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?)...
-        // and output name of rewarded actions + given points
-        // TODO prevent new piece being spawned before the delay is over
+        // give points, add cleared lines and delay applying gravity/accepting inputs
+        // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?) and output name of rewarded actions + given points
         Object.assign(roundData, {
             points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
             clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length,
@@ -164,8 +163,14 @@ function clearLines() {
         colorCanvasGrey(fieldCanvas);
         draw2dArray(fieldCanvas, field, { variableColors: true });
 
+        // prevent the cleared parts of the last dropped piece showing thru
+        clearCanvas(currentPieceCanvas);
+
         // move the cleared row(s) to the top of the field, closing the gaps
         indicesOfClearedRows.forEach(y => field.unshift(...field.splice(y, 1)));
+    } else {
+        // if no lines were cleared, spawn a new piece now and otherwise once the delay runs out
+        spawnNewPiece();
     }
 }
 
