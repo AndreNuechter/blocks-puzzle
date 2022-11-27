@@ -12,6 +12,8 @@ import roundData from './round-data.js';
 
 export const cellSize = { value: undefined };
 
+// TODO border on pieces may be cut off on small displays
+// FIXME on small (possibly high dpi) screens the canvas is rendered blurry and borders may be of uneven size. Is it scaled?; try the following: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas#scaling_for_high_resolution_displays
 setSizes();
 window.addEventListener('resize', () => {
     setSizes();
@@ -48,13 +50,13 @@ function setSizes() {
 
 function redrawCanvases() {
     colorCanvasGrey(fieldCanvas);
-    draw2dArray(fieldCanvas, field, { variableColors: true });
-
-    clearCanvas(currentPieceCanvas);
-    draw2dArray(currentPieceCanvas, roundData.currentPiece);
-    translateCanvas(currentPieceCanvas, roundData.x, roundData.y);
-
     colorCanvasGrey(piecePreview);
+    colorCanvasGrey(pieceCache);
+    clearCanvas(currentPieceCanvas);
+    translateCanvas(currentPieceCanvas, roundData.x, roundData.y);
+    draw2dArray(fieldCanvas, field, { variableColors: true });
+    draw2dArray(currentPieceCanvas, roundData.currentPiece);
+
     if (pieceQueue[0].length) {
         pieceQueue.forEach((upcomingPiece, i) => {
             draw2dArray(
@@ -68,7 +70,6 @@ function redrawCanvases() {
         });
     }
 
-    colorCanvasGrey(pieceCache);
     if (roundData.cachedPiece) {
         draw2dArray(
             pieceCache,

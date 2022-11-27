@@ -83,10 +83,41 @@ export function translateXPiece(delta) {
 }
 
 export function rotatePiece() {
-    // TODO wallkicks...meaning if a rotation is refused, try again while moving the rotated piece 1 (and then 2) blocks away from the closest wall
     const rotatedPiece = rotate2dArray(roundData.currentPiece);
+
     if (!isColliding(field, rotatedPiece, roundData.piecePosition)) {
         roundData.currentPiece = rotatedPiece;
+    } else {
+        // if a rotation is refused, try again while moving the rotated piece 1 (and then 2) blocks away from the closest wall ("wallkick")
+        if (roundData.piecePosition.x < (fieldWidth / 2)) {
+            if (!isColliding(field, rotatedPiece, {
+                x: roundData.piecePosition.x + 1,
+                y: roundData.piecePosition.y,
+            })) {
+                roundData.currentPiece = rotatedPiece;
+                roundData.piecePosition.x += 1;
+            } else if (!isColliding(field, rotatedPiece, {
+                x: roundData.piecePosition.x + 2,
+                y: roundData.piecePosition.y,
+            })) {
+                roundData.currentPiece = rotatedPiece;
+                roundData.piecePosition.x += 2;
+            }
+        } else {
+            if (!isColliding(field, rotatedPiece, {
+                x: roundData.piecePosition.x - 1,
+                y: roundData.piecePosition.y,
+            })) {
+                roundData.currentPiece = rotatedPiece;
+                roundData.piecePosition.x -= 1;
+            } else if (!isColliding(field, rotatedPiece, {
+                x: roundData.piecePosition.x - 2,
+                y: roundData.piecePosition.y,
+            })) {
+                roundData.currentPiece = rotatedPiece;
+                roundData.piecePosition.x -= 2;
+            }
+        }
     }
 }
 

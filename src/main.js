@@ -6,4 +6,4 @@ import './js/input-handling.js';
 // TODO reset btn
 // TODO high scores on game over screen
 // TODO add labels to canvases
-// TODO border on pieces may be cut off on small displays
+// TODO add labels to round btns
