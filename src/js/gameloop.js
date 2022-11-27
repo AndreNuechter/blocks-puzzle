@@ -13,8 +13,8 @@ import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
 // TODO turn these into modules...a canvas should change when the associated array does...we also need reset capabilities for resizing
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
-import { currentPieceCanvas, fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
-import { clearCanvas, colorCanvasGrey, draw2dArray } from './canvas-handling.js';
+import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
+import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
 import roundData from './round-data.js';
 
 let animationRequestId;
@@ -39,7 +39,8 @@ function gameLoop(timestamp) {
         }
     }
 
-    // initially pieces fall at 1 row/sec; after about 300 line-clears at 1 row/frame
+    // initially pieces fall at ~ 1 row/sec
+    // after about 300 line-clears at ~ 60 rows/sec or 1 row/frame
     if ((timestamp - lastTick) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
         lastTick = timestamp;
         applyGravity();
@@ -48,8 +49,7 @@ function gameLoop(timestamp) {
 
 export function startGame() {
     field.forEach(row => row.fill(0));
-    roundData.points = 0;
-    roundData.clearedLinesCount = 0;
+    Object.assign(roundData, { points: 0, clearedLinesCount: 0 });
     pieceQueue.forEach((_, i) => {
         pieceQueue[i] = getRandomPiece();
     });
@@ -128,18 +128,22 @@ export function applyGravity() {
         roundData.piecePosition.y += stepSize;
     } else {
         lockPiece();
-        clearLines();
+        clearLinesAndSpawnNewPiece();
     }
 }
 
 function lockPiece() {
+    // incorporate currentPiece into the playing field
     iterate(roundData.currentPiece, (y, x, cell) => {
         field[roundData.piecePosition.y + y][roundData.piecePosition.x + x] = cell;
     });
+    // draw the current piece onto the main canvas
     draw2dArray(fieldCanvas, roundData.currentPiece, { offsets: roundData.piecePosition });
+    // delete the currentPiece and clear its canvas
+    roundData.currentPiece = undefined;
 }
 
-function clearLines() {
+function clearLinesAndSpawnNewPiece() {
     const indicesOfClearedRows = field.reduce((result, row, y) => {
         if (row.some(cell => cell === 0)) return result;
         row.fill(0); // clear the row
@@ -163,9 +167,6 @@ function clearLines() {
         colorCanvasGrey(fieldCanvas);
         draw2dArray(fieldCanvas, field, { variableColors: true });
 
-        // prevent the cleared parts of the last dropped piece showing thru
-        clearCanvas(currentPieceCanvas);
-
         // move the cleared row(s) to the top of the field, closing the gaps
         indicesOfClearedRows.forEach(y => field.unshift(...field.splice(y, 1)));
     } else {
@@ -177,6 +178,7 @@ function clearLines() {
 function spawnNewPiece() {
     Object.assign(roundData.piecePosition, { x: dropOffsetX, y: dropOffsetY });
     roundData.currentPiece = progressPieceQueue();
+
     if (isColliding(field, roundData.currentPiece, roundData.piecePosition)) {
         endGame();
     }

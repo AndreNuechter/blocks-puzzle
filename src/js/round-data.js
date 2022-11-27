@@ -51,7 +51,9 @@ export default {
     set currentPiece(piece) {
         currentPiece = piece;
         clearCanvas(currentPieceCanvas);
-        draw2dArray(currentPieceCanvas, piece);
+        if (piece) {
+            draw2dArray(currentPieceCanvas, piece);
+        }
     },
     get cachedPiece() {
         return cachedPiece;
