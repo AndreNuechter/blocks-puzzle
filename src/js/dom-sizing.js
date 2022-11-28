@@ -12,16 +12,18 @@ import roundData from './round-data.js';
 
 export const cellSize = { value: undefined };
 
-// TODO border on pieces may be cut off on small displays
-// FIXME on small (possibly high dpi) screens the canvas is rendered blurry and borders may be of uneven size. Is it scaled? (it reminds of the look the canvases get w labels); try the following: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas#scaling_for_high_resolution_displays
 setSizes();
 window.addEventListener('resize', () => {
     setSizes();
     redrawCanvases();
 });
 
+// FIXME pieces in pieceQueue and pieceCache are drawn blurry on smaller screens, perhaps cuz of using fractional values somewhere (see previewScalingFactor)
 function setSizes() {
-    const value = Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10);
+    // an integer value is needed for crisp lines
+    const value = Math.floor(
+        Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10)
+    );
     cellSize.value = value;
 
     // +1 to account for outlines
