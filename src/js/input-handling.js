@@ -1,5 +1,4 @@
 import { stepSize, touchInputDelay } from './constants.js';
-import { newGameMsg, pauseMsg } from './dom-selections.js';
 import {
     applyGravity,
     rotatePiece,
@@ -17,9 +16,6 @@ const [handler, downEvent, upEvent] = 'ontouchend' in window
 const once = { once: true };
 
 if (upEvent !== 'keyup') {
-    newGameMsg.textContent = 'Tap screen to start a new Game.';
-    pauseMsg.textContent = 'Paused. Tap screen to continue.';
-
     // invert tint on pressed btns
     const pressedCssClass = 'pressed-down';
     const pressTarget = ({ target }) => target.classList.add(pressedCssClass);

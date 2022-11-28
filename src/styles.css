@@ -161,6 +161,14 @@ body {
     display: block;
 }
 
+#paused-msg::after {
+    content: 'Paused. Press any key to continue.';
+}
+
+#new-game-msg::after {
+    content: 'Press any key to start a new Game.';
+}
+
 @keyframes blink {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -183,5 +191,13 @@ body {
 @media (hover: none) {
     .control-element {
         display: block;
+    }
+
+    #paused-msg::after {
+        content: 'Paused. Tap screen to continue.';
+    }
+
+    #new-game-msg::after {
+        content: 'Tap screen to start a new Game.';
     }
 }
