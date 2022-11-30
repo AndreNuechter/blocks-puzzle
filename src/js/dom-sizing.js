@@ -18,35 +18,35 @@ window.addEventListener('resize', () => {
     redrawCanvases();
 });
 
-// FIXME pieces in pieceQueue and pieceCache are drawn blurry on smaller screens, perhaps cuz of using fractional values somewhere (see previewScalingFactor)
 function setSizes() {
     // an integer value is needed for crisp lines
-    const value = Math.floor(
+    const currentCellSize = Math.floor(
         Math.min(30, (window.innerHeight - 110) / 20, (window.innerWidth - 220) / 10)
     );
-    cellSize.value = value;
+
+    cellSize.value = currentCellSize;
 
     // +1 to account for outlines
     Object.assign(fieldCanvas.canvas, {
-        width: fieldWidth * value + 1,
-        height: fieldHeight * value + 1
+        width: fieldWidth * currentCellSize + 1,
+        height: fieldHeight * currentCellSize + 1
     });
     Object.assign(fieldCanvas.canvas.parentElement.style, {
-        width: fieldWidth * value + 1 + 'px',
-        height: fieldHeight * value + 1 + 'px'
+        width: fieldWidth * currentCellSize + 1 + 'px',
+        height: fieldHeight * currentCellSize + 1 + 'px'
     });
     Object.assign(currentPieceCanvas.canvas, {
-        width: currentPieceCanvasSize * value + 1,
-        height: currentPieceCanvasSize * value + 1
+        width: currentPieceCanvasSize * currentCellSize + 1,
+        height: currentPieceCanvasSize * currentCellSize + 1
     });
     Object.assign(piecePreview.canvas, {
         // -1 to save space and since the preview is never rotated
-        width: (currentPieceCanvasSize - 1) * value * previewScalingFactor + 1,
-        height: currentPieceCanvasSize * previewLength * value * previewScalingFactor + 1
+        width: (currentPieceCanvasSize - 1) * currentCellSize * previewScalingFactor + 1,
+        height: currentPieceCanvasSize * previewLength * currentCellSize * previewScalingFactor + 1
     });
     Object.assign(pieceCache.canvas, {
-        width: (currentPieceCanvasSize) * value * previewScalingFactor + 1,
-        height: currentPieceCanvasSize * value * previewScalingFactor + 1
+        width: (currentPieceCanvasSize) * currentCellSize * previewScalingFactor + 1,
+        height: currentPieceCanvasSize * currentCellSize * previewScalingFactor + 1
     });
 }
 
