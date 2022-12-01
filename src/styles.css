@@ -6,14 +6,13 @@ body {
     font-size: 1.5rem;
 }
 
-/* vars */
+/* base */
 :root {
     --border-color: #5a5958;
     --bg-color: #8fe9aa;
     --theme-color: #fff;
 }
 
-/* general */
 html {
     height: 100%;
 }
@@ -33,11 +32,10 @@ body * {
     box-sizing: inherit;
 }
 
-#canvas-container {
+#main-canvas-container {
     display: inline-flex;
     position: relative;
 }
-
 
 canvas {
     border: 1px solid var(--border-color);
@@ -59,50 +57,81 @@ canvas {
     position: absolute;
 }
 
-#hud {
-    display: inline-block;
-}
-
 /* grid */
 body {
     display: grid;
-    gap: 10px;
-    grid-auto-rows: auto;
-    align-items: center;
+    grid-template-areas:
+        "mainCanvas sideCanvas"
+        "mainCanvas statistics"
+        "mobileControls mobileControls";
+    grid-template-rows: 40% 30% 30%;
+    grid-template-columns: 50% 50%;
 }
 
-#canvas-container {
-    grid-column: 1;
-    grid-row: 1;
+#main-canvas-container {
+    grid-area: mainCanvas;
+    align-self: center;
+}
+
+#statistics {
+    grid-area: statistics;
+}
+
+#side-canvas-container {
+    grid-area: sideCanvas;
+    align-self: end;
+}
+
+#side-canvas-container,
+#main-canvas-container {
     justify-self: center;
 }
 
-#hud {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: start;
-}
-
-#round-buttons {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: center;
-}
-
-#arrow-keys {
-    grid-column: 2;
-    grid-row: 2;
-    justify-self: start;
+#mobile-controls {
+    grid-area: mobileControls;
+    display: flex;
+    justify-content: space-around;
+    align-self: center;
 }
 
 @media (min-width: 500px) {
-    #canvas-container {
-        grid-column: 2;
-        grid-row: 1 / 2;
+    body {
+        grid-template-areas:
+            "mainCanvas sideCanvas"
+            "mainCanvas statistics";
+        grid-template-rows: 60% 40%;
+        gap: 20px;
     }
 
-    #hud, #arrow-keys {
-        grid-column: 3;
+    #main-canvas-container {
+        justify-self: end;
+    }
+
+    #statistics {
+        justify-self: start;
+    }
+
+    #side-canvas-container {
+        justify-self: start;
+    }
+}
+
+/* mobile controls */
+.control-element {
+    transform: scale(1.75);
+}
+
+.control-element * {
+    fill: url(#button-sheen);
+}
+
+.pressed-down {
+    fill: url(#button-sheen-reverse)
+}
+
+@media (min-width: 500px) {
+    #mobile-controls {
+        display: none;
     }
 }
 
@@ -138,16 +167,6 @@ body {
     display: block;
 }
 
-.paused {
-    animation-name: blink;
-    animation-delay: 0s;
-    animation-duration: 2s;
-    animation-timing-function: ease-in-out;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    animation-fill-mode: both;
-}
-
 #game-over-msg,
 #paused-msg,
 #new-game-msg {
@@ -161,6 +180,16 @@ body {
     display: block;
 }
 
+.paused {
+    animation-name: blink;
+    animation-delay: 0s;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-fill-mode: both;
+}
+
 #paused-msg::after {
     content: 'Paused. Press any key to continue.';
 }
@@ -169,30 +198,7 @@ body {
     content: 'Press any key to start a new Game.';
 }
 
-@keyframes blink {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* control elements */
-.control-element {
-    display: none;
-    transform: scale(1.75);
-}
-
-.control-element * {
-    fill: url(#button-sheen);
-}
-
-.pressed-down {
-    fill: url(#button-sheen-reverse)
-}
-
 @media (hover: none) {
-    .control-element {
-        display: block;
-    }
-
     #paused-msg::after {
         content: 'Paused. Tap screen to continue.';
     }
@@ -200,4 +206,9 @@ body {
     #new-game-msg::after {
         content: 'Tap screen to start a new Game.';
     }
+}
+
+@keyframes blink {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

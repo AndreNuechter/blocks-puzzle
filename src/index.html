@@ -15,28 +15,30 @@
 </head>
 
 <body>
-    <div id="canvas-container">
+    <div id="main-canvas-container">
         <canvas id="field-canvas"></canvas>
         <canvas id="current-piece-canvas"></canvas>
     </div>
-    <div id="hud">
+    <div id="side-canvas-container">
         <canvas id="piece-cache"></canvas>
         <canvas id="piece-preview"></canvas>
-        <div id="statistics">
-            <p>Cleared: <span id="cleared-lines-count-display">0</span></p>
-            <p>Points: <span id="points-display">0</span></p>
-        </div>
     </div>
-    <svg id="round-buttons" class="control-element" width="100" height="100" viewBox="-0.2 -0.2 2.7 2.7">
-        <use href="#round-button" data-name="a" />
-        <use href="#round-button" transform="translate(1.1,1.1)" data-name="b" />
-    </svg>
-    <svg id="arrow-keys" class="control-element" width="100" height="100" viewBox="-1.5 -2.2 4 4">
-        <use href="#directional-button" data-name="ArrowDown" />
-        <use href="#directional-button" transform="translate(0.4,-0.7)rotate(90)" data-name="ArrowLeft" />
-        <use href="#directional-button" transform="translate(1,-0.4)rotate(180)" data-name="ArrowUp" />
-        <use href="#directional-button" transform="translate(0.6,0.3)rotate(270)" data-name="ArrowRight" />
-    </svg>
+    <div id="statistics">
+        <p>Cleared: <span id="cleared-lines-count-display">0</span></p>
+        <p>Points: <span id="points-display">0</span></p>
+    </div>
+    <div id="mobile-controls">
+        <svg id="round-buttons" class="control-element" width="100" height="100" viewBox="-0.2 -0.2 2.7 2.7">
+            <use href="#round-button" data-name="a" />
+            <use href="#round-button" transform="translate(1.1,1.1)" data-name="b" />
+        </svg>
+        <svg id="arrow-keys" class="control-element" width="100" height="100" viewBox="-1.5 -2.2 4 4">
+            <use href="#directional-button" data-name="ArrowDown" />
+            <use href="#directional-button" transform="translate(0.4,-0.7)rotate(90)" data-name="ArrowLeft" />
+            <use href="#directional-button" transform="translate(1,-0.4)rotate(180)" data-name="ArrowUp" />
+            <use href="#directional-button" transform="translate(0.6,0.3)rotate(270)" data-name="ArrowRight" />
+        </svg>
+    </div>
     <div id="overlay" class="fresh">
         <p id="game-over-msg">Game over</p>
         <p id="game-summary"></p>
