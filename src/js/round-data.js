@@ -80,8 +80,5 @@ export default {
         }
     },
     isGamePaused: undefined,
-    lineClearAnimationDelay: {
-        active: false,
-        nextTick: null
-    }
+    linesAreBeingCleared: false,
 };

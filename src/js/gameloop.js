@@ -11,7 +11,6 @@ import {
 } from './constants.js';
 import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
-// TODO turn these into modules...a canvas should change when the associated array does...we also need reset capabilities for resizing
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
 import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
 import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
@@ -25,26 +24,16 @@ function gameLoop(timestamp) {
         lastTick = timestamp;
     }
 
-    animationRequestId = requestAnimationFrame(gameLoop);
-
-    if (roundData.lineClearAnimationDelay.active) {
-        // redraw the changed playing-field once the delay has run out
-        if (timestamp < roundData.lineClearAnimationDelay.nextTick) {
-            return;
-        } else {
-            roundData.lineClearAnimationDelay.active = false;
-            colorCanvasGrey(fieldCanvas);
-            draw2dArray(fieldCanvas, field, { variableColors: true });
-            spawnNewPiece();
-        }
-    }
-
     // initially pieces fall at ~ 1 row/sec
     // after about 300 line-clears at ~ 60 rows/sec or 1 row/frame
-    if ((timestamp - lastTick) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)) {
+    if (!roundData.linesAreBeingCleared
+        && (timestamp - lastTick) >= (initialDropDelay - 3.33 * roundData.clearedLinesCount)
+    ) {
         lastTick = timestamp;
         applyGravity();
     }
+
+    animationRequestId = requestAnimationFrame(gameLoop);
 }
 
 export function startGame() {
@@ -157,20 +146,25 @@ function clearLinesAndSpawnNewPiece() {
         Object.assign(roundData, {
             points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
             clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length,
-            lineClearAnimationDelay: {
-                active: true,
-                nextTick: lastTick + lineClearBaseAnimationDelay * indicesOfClearedRows.length
-            }
+            linesAreBeingCleared: true
         });
 
         // re-draw field with gaps where cleared rows were
         colorCanvasGrey(fieldCanvas);
         draw2dArray(fieldCanvas, field, { variableColors: true });
 
+        // re-draw collapsed canvas and spawn a new piece once the delay runs out
+        setTimeout(() => {
+            roundData.linesAreBeingCleared = false;
+            colorCanvasGrey(fieldCanvas);
+            draw2dArray(fieldCanvas, field, { variableColors: true });
+            spawnNewPiece();
+        }, lineClearBaseAnimationDelay * indicesOfClearedRows.length);
+
         // move the cleared row(s) to the top of the field, closing the gaps
         indicesOfClearedRows.forEach(y => field.unshift(...field.splice(y, 1)));
     } else {
-        // if no lines were cleared, spawn a new piece now and otherwise once the delay runs out
+        // if no lines were cleared, spawn a new piece now
         spawnNewPiece();
     }
 }

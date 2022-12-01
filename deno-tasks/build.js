@@ -8,14 +8,14 @@ const html = await Deno.readTextFile("./src/index.html");
 await minifyAndMoveFile("./docs/index.html", "HTML", html);
 const css = await Deno.readTextFile("./src/styles.css");
 await minifyAndMoveFile("./docs/styles.css", "CSS", css);
-// create bundle and minify it into docs
+// create js bundle and minify it into docs
 const js = new TextDecoder().decode(await Deno.run({
     cmd: ["deno", "bundle", "./src/main.js"],
     stdout: "piped"
 }).output());
 // NOTE: we manually replace inline-comments,
-// as deno.bundle adds inline-comments to the start of its output, 
-// which minify doesnt remove, 
+// as deno.bundle adds inline-comments to the start of its output,
+// which minify doesnt remove,
 // making the bundle a long comment
 await minifyAndMoveFile("./docs/main.js", "JS", js.replace(/^\/\/[^\n\r]+[\n\r]*$/gm, ''));
 // minify service-worker
