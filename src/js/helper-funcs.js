@@ -41,3 +41,7 @@ export function getColor(colors, piece) {
     // due to the rotation system used, we know one of the two cells is filled in any piece-type
     return colors[piece[1][1] || piece[2][2]];
 }
+
+export function dispatchCustomEvent(eventName) {
+    document.dispatchEvent(new Event(eventName));
+}

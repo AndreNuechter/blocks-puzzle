@@ -1,13 +1,14 @@
-import { previewScalingFactor } from './constants.js';
+import { eventNames, previewScalingFactor } from './constants.js';
 import { draw2dArray, clearCanvas, colorCanvasGrey, translateCanvas } from './canvas-handling.js';
 import {
     clearedLinesCountDisplay,
     currentPieceCanvas,
-    gameSummary,
+    gameSummaryText,
     overlay,
-    pieceCache,
+    pieceCacheCanvas,
     pointsDisplay
 } from './dom-selections.js';
+import handleScore from './highscores.js';
 
 let points = 0;
 let clearedLinesCount = 0;
@@ -16,18 +17,17 @@ let cachedPiece;
 let x;
 let y;
 
-document.addEventListener('start-game', () => {
+document.addEventListener(eventNames.gameStarted, () => {
     overlay.classList.remove('fresh', 'paused', 'game-over');
     overlay.classList.add('playing');
 });
-
-document.addEventListener('pause-game', () => {
+document.addEventListener(eventNames.gamePaused, () => {
     overlay.classList.replace('playing', 'paused');
 });
-
-document.addEventListener('game-over', () => {
-    gameSummary.textContent = `You got ${points} points for clearing ${clearedLinesCount} lines`;
-    overlay.classList.replace('paused', 'game-over');
+document.addEventListener(eventNames.gameEnded, () => {
+    overlay.classList.replace('playing', 'game-over');
+    gameSummaryText.textContent = `You got ${points} points for clearing ${clearedLinesCount} lines`;
+    handleScore(points, clearedLinesCount);
 });
 
 export default {
@@ -60,8 +60,8 @@ export default {
     },
     set cachedPiece(piece) {
         cachedPiece = piece;
-        colorCanvasGrey(pieceCache);
-        draw2dArray(pieceCache, piece, { scalingFactor: previewScalingFactor });
+        colorCanvasGrey(pieceCacheCanvas);
+        draw2dArray(pieceCacheCanvas, piece, { scalingFactor: previewScalingFactor });
     },
     piecePosition: {
         get x() {

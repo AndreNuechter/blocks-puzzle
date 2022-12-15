@@ -1,23 +1,27 @@
 import {
     currentPieceCanvasSize,
-    initialDropDelay,
     dropOffsetX,
     dropOffsetY,
+    eventNames,
+    fieldWidth,
+    initialDropDelay,
+    lineClearBaseAnimationDelay,
     lineClearMultipliers,
     previewScalingFactor,
     stepSize,
-    lineClearBaseAnimationDelay,
-    fieldWidth
 } from './constants.js';
-import { iterate, lastItem, rotate2dArray } from './helper-funcs.js';
+import { iterate, lastItem, rotate2dArray, dispatchCustomEvent } from './helper-funcs.js';
 import { collidesHorizontally, collidesVertically, isColliding } from './collision-detection.js';
 import { field, pieceQueue, getRandomPiece } from './game-objects.js';
-import { fieldCanvas, pieceCache, piecePreview } from './dom-selections.js';
+import { fieldCanvas, pieceCacheCanvas, piecePreview } from './dom-selections.js';
 import { colorCanvasGrey, draw2dArray } from './canvas-handling.js';
 import roundData from './round-data.js';
 
 let animationRequestId;
 let lastTick;
+
+document.addEventListener(eventNames.gameStarted, startAnimation);
+document.addEventListener(eventNames.gamePaused, suspendAnimation);
 
 function gameLoop(timestamp) {
     if (lastTick === undefined) {
@@ -42,29 +46,26 @@ export function startGame() {
     pieceQueue.forEach((_, i) => {
         pieceQueue[i] = getRandomPiece();
     });
-    colorCanvasGrey(pieceCache);
+    colorCanvasGrey(pieceCacheCanvas);
     colorCanvasGrey(fieldCanvas);
     spawnNewPiece();
-    startAnimation();
 }
 
 export function startAnimation() {
     roundData.isGamePaused = false;
     animationRequestId = requestAnimationFrame(gameLoop);
-    document.dispatchEvent(new Event('start-game'));
 }
 
 export function suspendAnimation() {
     roundData.isGamePaused = true;
     cancelAnimationFrame(animationRequestId);
-    document.dispatchEvent(new Event('pause-game'));
 }
 
-export function endGame() {
+function endGame() {
     suspendAnimation();
     roundData.isGamePaused = undefined;
     lastTick = undefined;
-    document.dispatchEvent(new Event('game-over'));
+    dispatchCustomEvent(eventNames.gameEnded);
 }
 
 export function translateXPiece(delta) {
@@ -142,7 +143,8 @@ function clearLinesAndSpawnNewPiece() {
 
     if (indicesOfClearedRows.length > 0) {
         // give points, add cleared lines and delay applying gravity/accepting inputs
-        // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?) and output name of rewarded actions + given points
+        // TODO give bonus points for eg harddrops, t-spins and combos (timebased clears?)
+        // TODO output name of rewarded actions + given points
         Object.assign(roundData, {
             points: roundData.points + lineClearMultipliers[indicesOfClearedRows.length] * (Math.floor(roundData.clearedLinesCount * 0.1) + 1),
             clearedLinesCount: roundData.clearedLinesCount + indicesOfClearedRows.length,

@@ -1,13 +1,12 @@
-import { stepSize, touchInputDelay } from './constants.js';
+import { eventNames, stepSize, touchInputDelay } from './constants.js';
 import {
     applyGravity,
     rotatePiece,
-    startAnimation,
     startGame,
     stashPiece,
-    suspendAnimation,
     translateXPiece
 } from './gameloop.js';
+import { dispatchCustomEvent } from './helper-funcs.js';
 import roundData from './round-data.js';
 
 const [handler, downEvent, upEvent] = 'ontouchend' in window
@@ -28,30 +27,31 @@ if (upEvent !== 'keyup') {
     });
 }
 
-document.addEventListener('game-over', () => {
-    // only allow starting a new game after up,
-    // because the player might still hold down from the previous game
+window.addEventListener(upEvent, triggerGameLoop, once);
+document.addEventListener(eventNames.gameStarted, () => window.addEventListener(downEvent, handler));
+document.addEventListener(eventNames.gamePaused, () =>{
     window.removeEventListener(downEvent, handler);
-    window.addEventListener(
-        upEvent,
-        addInputHandler,
-        once
-    );
+    window.addEventListener(upEvent, () => {
+        window.addEventListener(downEvent, () => dispatchCustomEvent(eventNames.gameStarted), once);
+    }, once);
+});
+document.addEventListener(eventNames.gameEnded, () => window.removeEventListener(downEvent, handler));
+document.addEventListener(eventNames.scoreHandled, () => {
+    window.addEventListener(upEvent, () => {
+        window.addEventListener(downEvent, triggerGameLoop, once);
+    }, once);
 });
 
-addInputHandler();
-
-function addInputHandler() {
-    window.addEventListener(downEvent, handler);
+function triggerGameLoop() {
+    startGame();
+    dispatchCustomEvent(eventNames.gameStarted);
 }
 
 function handleKeydown({ key, ctrlKey }) {
     if (roundData.linesAreBeingCleared) return;
 
-    if (roundData.isGamePaused === undefined) {
-        startGame();
-    } else if (roundData.isGamePaused) {
-        startAnimation();
+    if (roundData.isGamePaused) {
+        dispatchCustomEvent(eventNames.gameStarted);
     } else if (key === 'ArrowDown' || key.toLowerCase() === 's') {
         applyGravity();
     } else if (key === 'ArrowLeft' || key.toLowerCase() === 'a') {
@@ -61,7 +61,7 @@ function handleKeydown({ key, ctrlKey }) {
     } else if (key === 'ArrowUp' || key.toLowerCase() === 'w') {
         rotatePiece();
     } else if (key === ' ') {
-        suspendAnimation();
+        dispatchCustomEvent(eventNames.gamePaused);
     } else if (ctrlKey) {
         stashPiece();
     }
@@ -70,10 +70,8 @@ function handleKeydown({ key, ctrlKey }) {
 function handlePointerdown({ target: { dataset: { name } } }) {
     if (roundData.linesAreBeingCleared) return;
 
-    if (roundData.isGamePaused === undefined) {
-        startGame();
-    } else if (roundData.isGamePaused) {
-        startAnimation();
+    if (roundData.isGamePaused) {
+        dispatchCustomEvent(eventNames.gameStarted);
     } else if (name === 'ArrowDown') {
         repeatTillPointerup(() => {
             applyGravity();
@@ -93,7 +91,7 @@ function handlePointerdown({ target: { dataset: { name } } }) {
         rotatePiece();
         vibrate();
     } else if (name === 'a') {
-        suspendAnimation();
+        dispatchCustomEvent(eventNames.gamePaused);
     } else if (name === 'b') {
         stashPiece();
         vibrate();

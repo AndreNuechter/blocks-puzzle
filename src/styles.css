@@ -159,23 +159,29 @@ body {
     pointer-events: all;
 }
 
-#game-summary {
-    display: none;
+#game-summary__table {
+    margin: 0 auto;
 }
 
-.game-over #game-summary {
-    display: block;
+#game-summary__table th {
+    padding: 0 8px;
 }
 
+#game-summary,
 #game-over-msg,
 #paused-msg,
-#new-game-msg {
+#player-name-form,
+#new-game-msg,
+.game-over.asking-player-name #new-game-msg,
+.game-over.asking-player-name #game-summary__table {
     display: none;
 }
 
 .fresh #new-game-msg,
+.game-over #game-summary,
 .game-over #game-over-msg,
 .game-over #new-game-msg,
+.asking-player-name #player-name-form,
 .paused #paused-msg {
     display: block;
 }

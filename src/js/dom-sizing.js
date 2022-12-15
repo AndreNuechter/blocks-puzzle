@@ -1,4 +1,4 @@
-import { fieldCanvas, currentPieceCanvas, piecePreview, pieceCache } from './dom-selections.js';
+import { fieldCanvas, currentPieceCanvas, piecePreview, pieceCacheCanvas } from './dom-selections.js';
 import {
     currentPieceCanvasSize,
     fieldHeight,
@@ -44,7 +44,7 @@ function setSizes() {
         width: (currentPieceCanvasSize - 1) * currentCellSize * previewScalingFactor + 1,
         height: currentPieceCanvasSize * previewLength * currentCellSize * previewScalingFactor + 1
     });
-    Object.assign(pieceCache.canvas, {
+    Object.assign(pieceCacheCanvas.canvas, {
         width: (currentPieceCanvasSize) * currentCellSize * previewScalingFactor + 1,
         height: currentPieceCanvasSize * currentCellSize * previewScalingFactor + 1
     });
@@ -53,7 +53,7 @@ function setSizes() {
 function redrawCanvases() {
     colorCanvasGrey(fieldCanvas);
     colorCanvasGrey(piecePreview);
-    colorCanvasGrey(pieceCache);
+    colorCanvasGrey(pieceCacheCanvas);
     clearCanvas(currentPieceCanvas);
     translateCanvas(currentPieceCanvas, roundData.piecePosition.x, roundData.piecePosition.y);
     draw2dArray(fieldCanvas, field, { variableColors: true });
@@ -74,7 +74,7 @@ function redrawCanvases() {
 
     if (roundData.cachedPiece) {
         draw2dArray(
-            pieceCache,
+            pieceCacheCanvas,
             roundData.cachedPiece,
             { scalingFactor: previewScalingFactor }
         );

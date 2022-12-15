@@ -41,7 +41,17 @@
     </div>
     <div id="overlay" class="fresh">
         <p id="game-over-msg">Game over</p>
-        <p id="game-summary"></p>
+        <div id="game-summary">
+            <p id="game-summary__text"></p>
+            <table id="game-summary__table"></table>
+        </div>
+        <form id="player-name-form">
+            <p>Congratulations, you've made the top-ten!</p>
+            <label>
+                What's your name?
+                <input name="player-name" maxlength="8" />
+            </label>
+        </form>
         <p id="new-game-msg"></p>
         <p id="paused-msg"></p>
     </div>

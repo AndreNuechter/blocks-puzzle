@@ -20,3 +20,9 @@ export const colors = [
     '#996633', // brown
     '#ff4000' // orange
 ];
+export const eventNames = {
+    gameStarted: 'game-started',
+    gamePaused: 'game-paused',
+    gameEnded: 'game-ended',
+    scoreHandled:'score-handled'
+};
