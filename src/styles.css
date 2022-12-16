@@ -167,6 +167,19 @@ body {
     padding: 0 8px;
 }
 
+#player-name-form input,
+#player-name-form input:focus-visible {
+    font-family: inherit;
+    font-size: larger;
+    text-align: center;
+    background-color: var(--bg-color);
+    outline: 0;
+    border: 0;
+    border-bottom: 1px solid black;
+    height: 32px;
+    margin: 0 20px;
+}
+
 #game-summary,
 #game-over-msg,
 #paused-msg,

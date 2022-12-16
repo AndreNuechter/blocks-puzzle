@@ -7,3 +7,4 @@ export const pointsDisplay = document.getElementById('points-display');
 export const clearedLinesCountDisplay = document.getElementById('cleared-lines-count-display');
 export const gameSummaryText = document.getElementById('game-summary__text');
 export const gameSummaryTable = document.getElementById('game-summary__table');
+export const playerNameInput = document.querySelector('input[name="player-name"]')

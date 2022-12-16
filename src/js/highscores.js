@@ -1,5 +1,5 @@
 import { eventNames } from './constants.js';
-import { gameSummaryTable, overlay } from "./dom-selections.js";
+import { gameSummaryTable, overlay, playerNameInput } from "./dom-selections.js";
 import { dispatchCustomEvent } from './helper-funcs.js';
 
 const highscores = JSON.parse(localStorage.getItem('blocks-puzzle-hi-scores')) || [];
@@ -14,13 +14,12 @@ const newScore = {
 document.addEventListener(eventNames.scoreHandled, () => {
     overlay.classList.remove('asking-player-name');
     gameSummaryTable.innerHTML = getHighscores();
+    playerNameInput.value = '';
 })
 
 document.getElementById('player-name-form').addEventListener('submit', (event) => {
-    const nameInput = event.target.querySelector('input');
     event.preventDefault();
-    newScore.name = nameInput.value;
-    nameInput.value = '';
+    newScore.name = playerNameInput.value;
     addHighscore(newScore);
     dispatchCustomEvent(eventNames.scoreHandled);
 });
@@ -30,6 +29,7 @@ export default function handleScore(points, clearedLinesCount) {
 
     if (position > -1) {
         overlay.classList.add('asking-player-name');
+        playerNameInput.focus();
         Object.assign(newScore, { points, clearedLinesCount, position });
     } else {
         dispatchCustomEvent(eventNames.scoreHandled);
