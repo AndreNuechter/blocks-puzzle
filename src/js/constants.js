@@ -18,7 +18,7 @@ export const colors = [
     '#33cc33', // green
     '#9933ff', // purple,
     '#996633', // brown
-    '#ff4000' // orange
+    '#ff711e' // orange
 ];
 export const eventNames = {
     gameStarted: 'game-started',
