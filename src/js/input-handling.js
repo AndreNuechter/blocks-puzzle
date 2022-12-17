@@ -9,23 +9,12 @@ import {
 import { dispatchCustomEvent } from './helper-funcs.js';
 import roundData from './round-data.js';
 
-const [handler, downEvent, upEvent] = 'ontouchend' in window
+const isTouchDevice = window.matchMedia('(hover: none)').matches;
+const [handler, downEvent, upEvent] = isTouchDevice
     ? [handlePointerdown, 'pointerdown', 'pointerup']
     : [handleKeydown, 'keydown', 'keyup'];
 const once = { once: true };
-
-if (upEvent !== 'keyup') {
-    // invert tint on pressed btns
-    const pressedCssClass = 'pressed-down';
-    const pressTarget = ({ target }) => target.classList.add(pressedCssClass);
-    const releaseTarget = ({ target }) => target.classList.remove(pressedCssClass);
-    // undo tint on release or exit
-    document.querySelectorAll('.control-element').forEach(element => {
-        element.addEventListener(downEvent, pressTarget)
-        element.addEventListener(upEvent, releaseTarget);
-        element.addEventListener('pointerleave', releaseTarget);
-    });
-}
+let touchInputIntervalId;
 
 window.addEventListener(upEvent, triggerGameLoop, once);
 document.addEventListener(eventNames.gameStarted, () => window.addEventListener(downEvent, handler));
@@ -36,11 +25,34 @@ document.addEventListener(eventNames.gamePaused, () =>{
     }, once);
 });
 document.addEventListener(eventNames.gameEnded, () => window.removeEventListener(downEvent, handler));
-document.addEventListener(eventNames.scoreHandled, () => {
-    window.addEventListener(upEvent, () => {
+
+if (isTouchDevice) {
+    // invert tint on pressed btns
+    const pressedCssClass = 'pressed-down';
+    const pressTarget = ({ target }) => target.classList.add(pressedCssClass);
+    const releaseTarget = ({ target }) => target.classList.remove(pressedCssClass);
+    // undo tint on release or exit
+    document.querySelectorAll('.control-element').forEach(element => {
+        element.addEventListener(downEvent, pressTarget)
+        element.addEventListener(upEvent, releaseTarget);
+        element.addEventListener('pointerleave', releaseTarget);
+    });
+    // handling this the same way as dektop would mean that it takes two taps to start a new game
+    // NOTE: on desktop it actually does take two keypresses if the game ends while not holding down a key
+    document.addEventListener(eventNames.scoreHandled, () => {
         window.addEventListener(downEvent, triggerGameLoop, once);
-    }, once);
-});
+    });
+    // stop repeating touchinputs on pointerup or game-end
+    const listener = () => clearInterval(touchInputIntervalId);
+    window.addEventListener(upEvent, listener);
+    document.addEventListener(eventNames.gameEnded, listener);
+} else {
+    document.addEventListener(eventNames.scoreHandled, () => {
+        window.addEventListener(upEvent, () => {
+            window.addEventListener(downEvent, triggerGameLoop, once);
+        }, once);
+    });
+}
 
 function triggerGameLoop() {
     startGame();
@@ -67,34 +79,48 @@ function handleKeydown({ key, ctrlKey }) {
     }
 }
 
+const repeatedTouchActions = {
+    ArrowDown: () => {
+        if (roundData.linesAreBeingCleared) return;
+        applyGravity();
+        vibrate();
+    },
+    ArrowLeft: () => {
+        if (roundData.linesAreBeingCleared) return;
+        translateXPiece(-stepSize);
+        vibrate();
+    },
+    ArrowRight: () => {
+        if (roundData.linesAreBeingCleared) return;
+        translateXPiece(stepSize);
+        vibrate();
+    }
+};
+
 function handlePointerdown({ target: { dataset: { name } } }) {
     if (roundData.linesAreBeingCleared) return;
 
     if (roundData.isGamePaused) {
         dispatchCustomEvent(eventNames.gameStarted);
-    } else if (name === 'ArrowDown') {
-        repeatTillPointerup(() => {
-            applyGravity();
-            vibrate();
-        });
-    } else if (name === 'ArrowLeft') {
-        repeatTillPointerup(() => {
-            translateXPiece(-stepSize);
-            vibrate();
-        });
-    } else if (name === 'ArrowRight') {
-        repeatTillPointerup(() => {
-            translateXPiece(stepSize);
-            vibrate();
-        });
-    } else if (name === 'ArrowUp') {
-        rotatePiece();
-        vibrate();
-    } else if (name === 'a') {
-        dispatchCustomEvent(eventNames.gamePaused);
-    } else if (name === 'b') {
-        stashPiece();
-        vibrate();
+    } else {
+        switch(name) {
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                repeatTillPointerup(repeatedTouchActions[name]);
+                break;
+            case 'ArrowUp':
+                rotatePiece();
+                vibrate();
+                break;
+            case 'a':
+                dispatchCustomEvent(eventNames.gamePaused);
+                break;
+            case 'b':
+                stashPiece();
+                vibrate();
+                break;
+        }
     }
 }
 
@@ -103,14 +129,8 @@ function repeatTillPointerup(action) {
     // fire the callback once immediately
     action();
 
-    // fire the callback in an interval until pointerup
-    const intervalId = setInterval(action, touchInputDelay);
-
-    window.addEventListener(
-        upEvent,
-        () => clearInterval(intervalId),
-        once
-    );
+    // fire the callback in an interval until pointerup or game-end
+    touchInputIntervalId = setInterval(action, touchInputDelay);
 }
 
 function vibrate() {

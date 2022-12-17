@@ -51,12 +51,12 @@ export function startGame() {
     spawnNewPiece();
 }
 
-export function startAnimation() {
+function startAnimation() {
     roundData.isGamePaused = false;
     animationRequestId = requestAnimationFrame(gameLoop);
 }
 
-export function suspendAnimation() {
+function suspendAnimation() {
     roundData.isGamePaused = true;
     cancelAnimationFrame(animationRequestId);
 }
