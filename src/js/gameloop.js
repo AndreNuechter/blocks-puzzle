@@ -5,7 +5,7 @@ import {
     eventNames,
     fieldWidth,
     initialDropDelay,
-    lineClearBaseAnimationDelay,
+    lineClearAnimationDelay,
     lineClearMultipliers,
     previewScalingFactor,
     stepSize,
@@ -161,7 +161,7 @@ function clearLinesAndSpawnNewPiece() {
             colorCanvasGrey(fieldCanvas);
             draw2dArray(fieldCanvas, field, { variableColors: true });
             spawnNewPiece();
-        }, lineClearBaseAnimationDelay * indicesOfClearedRows.length);
+        }, lineClearAnimationDelay);
 
         // move the cleared row(s) to the top of the field, closing the gaps
         indicesOfClearedRows.forEach(y => field.unshift(...field.splice(y, 1)));
