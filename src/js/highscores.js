@@ -27,10 +27,11 @@ document.getElementById('player-name-form').addEventListener('submit', (event) =
 export default function handleScore(points, clearedLinesCount) {
     const position = getPosition(points);
 
+    Object.assign(newScore, { points, clearedLinesCount, position });
+
     if (position > -1) {
         overlay.classList.add('asking-player-name');
         playerNameInput.focus();
-        Object.assign(newScore, { points, clearedLinesCount, position });
     } else {
         dispatchCustomEvent(eventNames.scoreHandled);
     }
@@ -41,14 +42,21 @@ function getHighscores() {
 
     return '<tr><th>#</th><th>Points</th><th>Cleared</th><th>Name</th></tr>' + highscores
         .map(
-            ({ points, clearedLinesCount, name }, position) => `
-            <tr>
+            (
+                { points, clearedLinesCount, name },
+                position
+            ) => {
+                // NOTE: this can't be inline, as the minifier couldnt deal with that
+                const className = position === newScore.position ? ' class="newest-score"' : '';
+
+                return `
+            <tr${className}>
                 <td>${position + 1}</td>
                 <td>${points}</td>
                 <td>${clearedLinesCount}</td>
                 <td>${name}</td>
-            </tr>`
-        )
+            </tr>`;
+        })
         .join('');
 }
 

@@ -199,7 +199,8 @@ body {
     display: block;
 }
 
-.paused {
+.paused,
+.newest-score {
     animation-name: blink;
     animation-delay: 0s;
     animation-duration: 2s;
