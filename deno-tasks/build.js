@@ -18,7 +18,8 @@ const js = new TextDecoder().decode(await Deno.run({
 // which minify doesnt remove,
 // making the bundle a long comment
 await minifyAndMoveFile("./docs/main.js", "JS", js.replace(/^\/\/[^\n\r]+[\n\r]*$/gm, ''));
-// minify service-worker
+// minify service-worker,
+// replacing version number for cache busting
 const sw = await Deno.readTextFile("./src/service-worker.js");
 await minifyAndMoveFile("./docs/service-worker.js", "JS", sw.replace('#!#', Date.now()));
 // copy images and manifest into docs
@@ -26,5 +27,12 @@ copy("./src/manifest.json", "./docs/manifest.json");
 copy("./src/images", "./docs/images");
 
 function minifyAndMoveFile(target, language, source) {
-    return Deno.writeTextFile(target, minify(Language[language], source));
+    return Deno
+        .writeTextFile(
+            target,
+            minify(
+                Language[language],
+                source
+            )
+        );
 }
